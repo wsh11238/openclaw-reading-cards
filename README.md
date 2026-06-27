@@ -6,6 +6,13 @@ A clean reading-card and profile-library template for turning people, books, and
 
 ![Reading cards preview](docs/screenshot.png)
 
+
+## Visual Tour | 图像导览
+
+| Product Highlights | Build / Remix Flow |
+|---|---|
+| ![Product highlights](docs/feature-map.png) | ![Build and remix flow](docs/workflow-map.png) |
+
 ## Why Star This | 为什么值得 Star
 
 - Great starting point for a personal reading system, founder library, biography index, or learning portal.
