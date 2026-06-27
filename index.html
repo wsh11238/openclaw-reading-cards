@@ -1,0 +1,2163 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中国企业家人物志 - 华商纪</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+/* ============ 主题变量 ============ */
+:root {
+  --bg: #0a0e1a;
+  --bg-side: #0d1117;
+  --card: #111827;
+  --card-2: #0d1117;
+  --card-3: #1f2937;
+  --border: #1f2937;
+  --border-2: #374151;
+  --text: #e2e8f0;
+  --text-sec: #94a3b8;
+  --text-muted: #64748b;
+  --text-dim: #475569;
+  --accent: #3b82f6;
+  --accent-2: #60a5fa;
+  --input-bg: #111827;
+  --shadow: rgba(0,0,0,0.3);
+}
+[data-theme="light"] {
+  --bg: #f8fafc;
+  --bg-side: #ffffff;
+  --card: #ffffff;
+  --card-2: #f1f5f9;
+  --card-3: #e2e8f0;
+  --border: #e2e8f0;
+  --border-2: #cbd5e1;
+  --text: #1e293b;
+  --text-sec: #475569;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+  --accent: #3b82f6;
+  --accent-2: #2563eb;
+  --input-bg: #f1f5f9;
+  --shadow: rgba(0,0,0,0.08);
+}
+* { font-family: 'Noto Sans SC', sans-serif; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); margin: 0; overflow: hidden; transition: background 0.2s, color 0.2s; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--card-2); }
+::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+.leaflet-container { background: var(--card-2); }
+.leaflet-popup-content-wrapper { background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 8px; }
+.leaflet-popup-tip { background: var(--card); }
+.leaflet-control-zoom a { background: var(--card); color: var(--text); border-color: var(--border); }
+.leaflet-control-zoom a:hover { background: var(--card-3); }
+
+/* ============ 语义化主题类 ============ */
+.t-bg { background: var(--bg); }
+.t-side { background: var(--bg-side); }
+.t-card { background: var(--card); }
+.t-card2 { background: var(--card-2); }
+.t-card3 { background: var(--card-3); }
+.t-text { color: var(--text); }
+.t-sec { color: var(--text-sec); }
+.t-muted { color: var(--text-muted); }
+.t-dim { color: var(--text-dim); }
+.t-accent { color: var(--accent-2); }
+.t-border { border-color: var(--border); }
+
+/* ============ 无障碍：焦点可见 ============ */
+*:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ============ 搜索高亮 ============ */
+mark { background: #fbbf2444; color: inherit; border-radius: 2px; padding: 0 2px; }
+
+.glow { box-shadow: 0 0 30px rgba(59,130,246,0.15); }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; transition: all 0.2s; }
+.card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(59,130,246,0.1); transform: translateY(-2px); }
+.card-active { border-color: var(--accent) !important; box-shadow: 0 0 20px rgba(59,130,246,0.2); }
+.card-fav { border-color: #fbbf24 !important; box-shadow: 0 0 0 1px #fbbf2444, 0 0 18px rgba(251,191,36,0.18); }
+.card-cmp { border-color: var(--accent) !important; box-shadow: 0 0 0 1px rgba(59,130,246,0.3); }
+.tab-active { border-bottom: 2px solid var(--accent); color: var(--accent-2); }
+.tab-inactive { border-bottom: 2px solid transparent; color: var(--text-muted); }
+.tab-inactive:hover { color: var(--text-sec); }
+.badge { background: var(--card-3); color: var(--text-sec); padding: 2px 10px; border-radius: 12px; font-size: 12px; white-space: nowrap; }
+.tag { background: var(--card-3); color: var(--accent-2); padding: 3px 10px; border-radius: 6px; font-size: 12px; display: inline-block; }
+.tag-green { background: #052e16; color: #34d399; }
+.tag-purple { background: #1a1a2e; color: #a78bfa; }
+.tag-orange { background: #2a1a0a; color: #fb923c; }
+.tag-pink { background: #2a0a1a; color: #f472b6; }
+.tag-cyan { background: #0a2a2e; color: #22d3ee; }
+.tag-red { background: #2a0a0a; color: #f87171; }
+.tag-amber { background: #2a2208; color: #fbbf24; }
+.search-input { background: var(--input-bg); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 8px 14px; outline: none; width: 100%; transition: all 0.15s; }
+.search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.search-input::placeholder { color: var(--text-dim); }
+.search-status { font-size: 11px; color: var(--text-muted); margin-top: 4px; height: 14px; }
+.cat-chip { padding: 3px 9px; border-radius: 14px; font-size: 11px; cursor: pointer; transition: all 0.15s; white-space: nowrap; border: 1px solid var(--border); background: var(--card-2); color: var(--text-muted); }
+.cat-chip:hover { border-color: var(--border-2); color: var(--text-sec); }
+.cat-chip-active { border-color: var(--cat-color); background: var(--cat-color); color: white; opacity: 0.9; }
+.layout-btn { padding: 4px 12px; border-radius: 6px; font-size: 12px; border: 1px solid var(--border); background: var(--card-2); color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
+.layout-btn:hover { color: var(--text-sec); }
+.layout-active { border-color: var(--accent); background: var(--accent); color: white; }
+.detail-section { border-bottom: 1px solid var(--border); padding: 12px 0; }
+.detail-section:last-child { border-bottom: none; }
+.detail-label { color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+.relation-item { background: var(--card-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; }
+.relation-item:hover { border-color: var(--accent); background: var(--card); }
+.loading { display: flex; align-items: center; justify-content: center; height: 200px; color: var(--text-dim); }
+.empty { display: flex; align-items: center; justify-content: center; height: 200px; color: var(--text-dim); font-size: 14px; }
+.ent-card { cursor: pointer; transition: all 0.2s; }
+.ent-card:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ent-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px var(--shadow); }
+.ent-avatar { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; color: white; flex-shrink: 0; }
+#graph { background: var(--bg); border-radius: 8px; }
+.graph-node { cursor: pointer; }
+.graph-link { stroke: var(--border-2); stroke-width: 1px; }
+.timeline-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--bg); z-index: 1; }
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 50; backdrop-filter: blur(4px); }
+.stat-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; }
+.fade-in { animation: fadeIn 0.2s ease-in; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.slide-in { animation: slideIn 0.25s ease-out; }
+@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+.bar-chart-bar { transition: width 0.5s ease; }
+
+/* 卡片右上角按钮 */
+.fav-btn { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-dim); padding: 2px; line-height: 1; border-radius: 4px; }
+.fav-btn:hover { color: #fbbf24; }
+.fav-btn.active { color: #fbbf24; }
+.compare-chk { cursor: pointer; display: flex; align-items: center; font-size: 14px; padding: 2px; border-radius: 4px; }
+.compare-chk input { display: none; }
+.compare-chk span { opacity: 0.45; color: var(--text-muted); }
+.compare-chk input:checked + span { opacity: 1; color: var(--accent-2); }
+
+/* 收藏筛选按钮 */
+.fav-filter { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-2); color: var(--text-sec); cursor: pointer; font-size: 13px; transition: all 0.15s; }
+.fav-filter:hover { border-color: #fbbf24; color: #fbbf24; }
+.fav-filter-active { border-color: #fbbf24; background: rgba(251,191,36,0.12); color: #fbbf24; }
+
+/* 对比栏 */
+.compare-bar { background: var(--card-2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+
+/* 设置面板 */
+.settings-panel { position: fixed; top: 52px; right: 12px; z-index: 60; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; width: 280px; box-shadow: 0 8px 30px var(--shadow); }
+.icon-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; transition: all 0.15s; border: 1px solid var(--border); background: var(--card-2); color: var(--text-sec); font-size: 16px; }
+.icon-btn:hover { color: var(--text); border-color: var(--border-2); }
+
+/* 热力图 */
+.heatmap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 4px; }
+.heat-cell { height: 34px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--text-muted); cursor: pointer; transition: transform 0.1s; border: 1px solid transparent; }
+.heat-cell:hover { transform: scale(1.15); border-color: var(--accent); z-index: 2; }
+
+/* 键盘提示 */
+.kbd-hint { position: fixed; bottom: 8px; left: 8px; z-index: 40; font-size: 11px; color: var(--text-dim); background: var(--card-2); border: 1px solid var(--border); padding: 4px 8px; border-radius: 6px; opacity: 0.75; pointer-events: none; max-width: 280px; }
+
+/* 对比视图 */
+.cmp-col { border-top: 3px solid; }
+.cmp-table th, .cmp-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left; font-size: 13px; }
+
+/* ============ 骨架屏 ============ */
+.skeleton { background: linear-gradient(90deg, var(--card-2) 25%, var(--card-3) 50%, var(--card-2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.skeleton-card { border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+.skeleton-line { height: 12px; margin-bottom: 8px; }
+
+/* ============ 移动端响应式 ============ */
+#mobileMenuBtn { display: none; }
+@media (max-width: 768px) {
+  #sidebar { position: fixed; left: -288px; top: 0; bottom: 0; z-index: 100; transition: left 0.3s; width: 288px; }
+  #sidebar.open { left: 0; }
+  #mobileMenuBtn { display: flex !important; }
+  #detailPanel { width: 100% !important; position: fixed; bottom: 0; left: 0; right: 0; top: auto; max-height: 70vh; border-radius: 16px 16px 0 0; }
+  .view-tab { padding: 8px 12px !important; font-size: 12px !important; }
+  #graphContainer { flex-direction: column !important; }
+  #networkDetail { width: 100% !important; max-height: 300px; }
+  #mapLocationList { width: 100% !important; max-height: 200px; }
+  .kbd-hint { display: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="flex h-screen overflow-hidden">
+
+<!-- 移动端侧边栏遮罩层 -->
+<div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-50 hidden md:hidden" onclick="toggleSidebar()"></div>
+
+  <!-- ============ 左侧边栏 ============ -->
+  <aside id="sidebar" class="w-72 flex-shrink-0 t-side border-r t-border flex flex-col overflow-hidden">
+    <!-- 标题 -->
+    <div class="p-5 border-b t-border">
+      <h1 class="text-lg font-bold t-text flex items-center gap-2">
+        <span class="text-2xl">🏢</span> 华商纪
+      </h1>
+      <p class="text-xs t-muted mt-1">中国企业家人物志 · 商业群像</p>
+    </div>
+
+    <!-- 搜索 -->
+    <div class="p-4 border-b t-border">
+      <input type="text" id="searchInput" class="search-input" placeholder="🔍 搜索企业家/公司/事件…" aria-label="搜索">
+      <div class="search-status" id="searchStatus"></div>
+    </div>
+
+    <!-- 收藏快捷筛选 -->
+    <div class="px-4 pt-3">
+      <button id="favFilterBtn" class="fav-filter" onclick="toggleFavoritesFilter()" aria-label="切换收藏筛选" title="收藏筛选">
+        <span>★ 收藏筛选</span>
+        <span class="badge" id="favCountBadge">0</span>
+      </button>
+    </div>
+
+    <!-- 行业分类 -->
+    <div class="p-4 border-b t-border">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs t-muted uppercase tracking-wider">行业分类</span>
+        <button id="clearCatFilter" class="text-xs t-accent hover:opacity-80 cursor-pointer" aria-label="清除行业筛选" title="显示全部行业">全部</button>
+      </div>
+      <div class="flex flex-wrap gap-2" id="categoryFilters"></div>
+    </div>
+
+    <!-- 年代范围 -->
+    <div class="p-4 border-b t-border">
+      <div class="text-xs t-muted mb-2 uppercase tracking-wider">年代范围</div>
+      <div class="flex gap-2">
+        <input type="number" id="yearFrom" class="search-input text-sm" placeholder="从" value="1980" aria-label="起始年份">
+        <input type="number" id="yearTo" class="search-input text-sm" placeholder="到" value="2026" aria-label="结束年份">
+      </div>
+    </div>
+
+  <!-- 对比栏 -->
+    <div class="p-4 border-b t-border">
+      <div class="compare-bar">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs t-muted">⚖️ 对比列表</span>
+          <span class="badge" id="compareCount">0</span>
+        </div>
+        <button id="startCompareBtn" onclick="startCompare()" disabled class="w-full py-1.5 rounded-lg text-xs transition-colors disabled:opacity-40" style="background:var(--accent);color:white;">
+          开始对比
+        </button>
+        <button onclick="clearCompare()" class="w-full mt-1 py-1 t-card2 border t-border rounded-lg text-xs t-sec hover:t-text">清空</button>
+      </div>
+    </div>
+
+    <!-- 底部 -->
+    <div class="mt-auto p-4 border-t t-border">
+      <div class="text-xs t-dim text-center">华商纪 · 中国企业家发展史</div>
+    </div>
+  </aside>
+
+  <!-- ============ 主内容区 ============ -->
+  <main class="flex-1 flex flex-col overflow-hidden">
+
+    <!-- 顶部Tab -->
+    <header class="flex items-center border-b t-border px-4 t-side flex-shrink-0">
+      <button id="mobileMenuBtn" class="icon-btn md:hidden flex-shrink-0 mr-2" onclick="toggleSidebar()" title="菜单" aria-label="打开侧边栏">☰</button>
+      <button class="view-tab px-4 py-3 text-sm font-medium tab-active" data-view="grid" role="tab" aria-selected="true" aria-label="总览视图">👥 总览</button>
+      <button class="view-tab px-4 py-3 text-sm font-medium tab-inactive" data-view="timeline" role="tab" aria-selected="false" aria-label="时间轴视图">🕐 时间轴</button>
+      <button class="view-tab px-4 py-3 text-sm font-medium tab-inactive" data-view="network" role="tab" aria-selected="false" aria-label="关系网络视图">🔗 关系</button>
+      <button class="view-tab px-4 py-3 text-sm font-medium tab-inactive" data-view="map" role="tab" aria-selected="false" aria-label="地图视图">📍 地图</button>
+      <button class="view-tab px-4 py-3 text-sm font-medium tab-inactive" data-view="events" role="tab" aria-selected="false" aria-label="事件列表视图">📋 事件</button>
+      <button class="view-tab px-4 py-3 text-sm font-medium tab-inactive" data-view="stats" role="tab" aria-selected="false" aria-label="统计视图">📊 统计</button>
+      <button class="view-tab px-4 py-3 text-sm font-medium tab-inactive" data-view="compare" role="tab" aria-selected="false" aria-label="对比视图">⚖️ 对比</button>
+      <button class="view-tab px-4 py-3 text-sm font-medium tab-inactive" data-view="books" role="tab" aria-selected="false" aria-label="书库视图">📚 书库</button>
+      <div class="ml-auto flex items-center gap-2">
+        <button class="icon-btn" id="exportBtn" onclick="toggleExportMenu()" title="导出数据" aria-label="导出数据">📥</button>
+        <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="切换主题" aria-label="切换主题">🌙</button>
+        <button class="icon-btn" id="settingsBtn" onclick="toggleSettings()" title="设置" aria-label="设置">⚙️</button>
+        <span class="badge" id="filterBadge">全部</span>
+      </div>
+    </header>
+
+    <!-- 视图容器 -->
+    <div class="flex-1 overflow-hidden relative">
+
+      <!-- 人物总览 -->
+      <div class="view-panel absolute inset-0 overflow-auto p-5" id="panel-grid" role="tabpanel" aria-label="人物总览">
+        <div class="max-w-7xl mx-auto" id="gridContainer"></div>
+      </div>
+
+      <!-- 时间轴 -->
+      <div class="view-panel absolute inset-0 overflow-auto p-5 hidden" id="panel-timeline" role="tabpanel" aria-label="时间轴">
+        <div class="max-w-5xl mx-auto" id="timelineContainer"></div>
+      </div>
+
+      <!-- 关系网络 -->
+      <div class="view-panel absolute inset-0 overflow-hidden p-5 hidden flex flex-col" id="panel-network" role="tabpanel" aria-label="关系网络">
+        <div class="mb-3 flex-shrink-0" id="networkToolbar"></div>
+        <div class="flex gap-5 flex-1 overflow-hidden" id="graphContainer">
+          <div class="flex-1 relative">
+            <div id="graph" class="w-full h-full rounded-xl border t-border"></div>
+          </div>
+          <div class="w-80 flex-shrink-0 overflow-auto" id="networkDetail">
+            <div class="empty">👈 点击节点查看详情</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 地图 -->
+      <div class="view-panel absolute inset-0 overflow-hidden p-5 hidden" id="panel-map" role="tabpanel" aria-label="地图">
+        <div class="flex gap-5 h-full">
+          <div class="w-72 flex-shrink-0 overflow-auto pr-2" id="mapLocationList"></div>
+          <div class="flex-1 rounded-xl border t-border overflow-hidden">
+            <div id="map" class="w-full h-full"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 事件列表 -->
+      <div class="view-panel absolute inset-0 overflow-auto p-5 hidden" id="panel-events" role="tabpanel" aria-label="事件列表">
+        <div class="max-w-4xl mx-auto" id="eventListContainer"></div>
+      </div>
+
+      <!-- 行业统计 -->
+      <div class="view-panel absolute inset-0 overflow-auto p-5 hidden" id="panel-stats" role="tabpanel" aria-label="行业统计">
+        <div class="max-w-5xl mx-auto" id="statsContainer"></div>
+      </div>
+
+      <!-- 对比 -->
+      <div class="view-panel absolute inset-0 overflow-auto p-5 hidden" id="panel-compare" role="tabpanel" aria-label="企业家对比">
+        <div class="max-w-7xl mx-auto" id="compareContainer"></div>
+      </div>
+
+      <!-- 书库 -->
+      <div class="view-panel absolute inset-0 overflow-auto p-5 hidden" id="panel-books" role="tabpanel" aria-label="书库">
+        <div class="max-w-7xl mx-auto" id="booksContainer"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ============ 右侧详情面板 ============ -->
+  <aside class="w-96 flex-shrink-0 t-side border-l t-border overflow-auto hidden slide-in" id="detailPanel">
+    <div class="p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-base font-bold t-text" id="detailTitle">详情</h3>
+        <button id="closeDetail" class="t-muted hover:t-text text-xl leading-none" aria-label="关闭详情面板" title="关闭">&times;</button>
+      </div>
+      <div id="detailContent"></div>
+    </div>
+  </aside>
+
+</div>
+
+<!-- ============ 人物详情弹窗 ============ -->
+<div class="modal-backdrop hidden" id="entModal" role="dialog" aria-modal="true" aria-label="人物详情">
+  <div class="fixed inset-0 flex items-center justify-center p-4" onclick="if(event.target===this)closeEntModal()">
+    <div class="t-card border t-border rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto fade-in">
+      <div class="p-6" id="entModalContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 设置面板 ============ -->
+<div class="settings-panel hidden fade-in" id="settingsPanel" role="dialog" aria-modal="true" aria-label="设置面板">
+  <div class="flex items-center justify-between mb-3">
+    <h3 class="text-sm font-bold t-text">⚙️ 设置</h3>
+    <button onclick="toggleSettings()" class="t-muted hover:t-text text-lg leading-none" aria-label="关闭设置" title="关闭">&times;</button>
+  </div>
+  <div class="detail-section">
+    <div class="flex items-center justify-between">
+      <span class="text-sm t-sec">外观主题</span>
+      <button onclick="toggleTheme()" class="cat-chip" id="themeBtn2">🌙 暗色</button>
+    </div>
+  </div>
+  <div class="detail-section">
+    <div class="flex items-center justify-between">
+      <span class="text-sm t-sec">★ 我的收藏</span>
+      <span class="text-xs" style="color:#fbbf24" id="favCountSettings">0 位</span>
+    </div>
+  </div>
+  <div class="detail-section">
+    <div class="detail-label">键盘快捷键</div>
+    <div class="text-xs t-muted space-y-1 mt-1">
+      <div><b class="t-sec">1-8</b> 切换视图</div>
+      <div><b class="t-sec">/</b> 聚焦搜索框</div>
+      <div><b class="t-sec">ESC</b> 关闭弹窗 / 清空搜索</div>
+      <div><b class="t-sec">← → ↑ ↓</b> 切换卡片焦点</div>
+    </div>
+  </div>
+  <div class="detail-section">
+    <button onclick="clearCompare();toggleSettings();" class="w-full py-2 t-card2 border t-border rounded-lg text-xs t-sec hover:t-text">⚖️ 清除对比列表</button>
+  </div>
+</div>
+
+<!-- ============ 导出菜单面板 ============ -->
+<div class="settings-panel hidden fade-in" id="exportPanel" role="dialog" aria-modal="true" aria-label="导出数据面板">
+  <div class="flex items-center justify-between mb-3">
+    <h3 class="text-sm font-bold t-text">📥 导出数据</h3>
+    <button onclick="toggleExportMenu()" class="t-muted hover:t-text text-lg leading-none" aria-label="关闭">&times;</button>
+  </div>
+  <div class="detail-section">
+    <div class="detail-label">当前筛选结果</div>
+    <div class="space-y-2 mt-2">
+      <button onclick="exportData('csv')" class="w-full py-2 t-card2 border t-border rounded-lg text-xs t-sec hover:t-text hover:border-[var(--accent)] transition-colors">📄 导出 CSV 表格</button>
+      <button onclick="exportData('json')" class="w-full py-2 t-card2 border t-border rounded-lg text-xs t-sec hover:t-text hover:border-[var(--accent)] transition-colors">🗂️ 导出 JSON 数据</button>
+    </div>
+  </div>
+  <div class="detail-section">
+    <div class="detail-label">关系网络</div>
+    <button onclick="exportNetworkSVG()" class="w-full py-2 t-card2 border t-border rounded-lg text-xs t-sec hover:t-text hover:border-[var(--accent)] transition-colors mt-2">🖼️ 导出网络图为 SVG</button>
+  </div>
+</div>
+
+<!-- 键盘提示 -->
+<div class="kbd-hint">⌨ 1-8 视图 · / 搜索 · ESC 关闭 · 方向键 切换卡片</div>
+
+<script src="data.js"></script>
+<script src="books.js"></script>
+<script>
+// ============ 全局状态 ============
+const { CATEGORIES, EVENT_TYPES, RELATION_TYPES, LOCATIONS, ENTREPRENEURS } = window.ENTREPRENEURS_DATA;
+const { BOOK_CATEGORIES, BOOKS } = window.BOOKS_DATA;
+
+let currentView = 'grid';
+let activeCategories = new Set();
+let searchQuery = '';
+let yearFrom = 1980, yearTo = 2026;
+let map = null;
+let graphSimulation = null;
+
+// 阶段三/四新增状态
+let compareList = new Set();            // 对比列表
+let favorites = new Set();              // 收藏
+let favoritesOnly = false;              // 仅看收藏
+let bookProgress = {};                  // 自定义阅读进度 { id: number }
+let activeRelationTypes = new Set();    // 关系类型筛选
+let activeEventTypes = new Set();      // 事件类型筛选
+let eventPerson = null;                 // 事件人物筛选 (id)
+let networkLayout = 'force';            // 网络布局
+let networkSearchQuery = '';            // 网络节点搜索
+let theme = 'light';                    // 主题
+
+let isHashApplying = false;             // 防止 hashchange 循环
+
+// ============ 工具函数 ============
+function getCatColor(cat) { return CATEGORIES[cat]?.color || '#64748b'; }
+function getCatIcon(cat) { return CATEGORIES[cat]?.icon || '📋'; }
+function getCatName(cat) { return CATEGORIES[cat]?.name || '其他'; }
+
+function getEventTypeName(t) { return EVENT_TYPES[t]?.name || t || '事件'; }
+function getEventTypeIcon(t) { return EVENT_TYPES[t]?.icon || '📋'; }
+function getEventTypeColor(t) { return EVENT_TYPES[t]?.color || '#64748b'; }
+
+function getRelationTypeName(t) { return RELATION_TYPES[t]?.name || t || '关系'; }
+function getRelationTypeIcon(t) { return RELATION_TYPES[t]?.icon || '🔗'; }
+function getRelationTypeColor(t) { return RELATION_TYPES[t]?.color || '#64748b'; }
+
+// HTML 转义
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// 搜索高亮：返回带 <mark> 的 HTML
+function highlightText(text, query) {
+  if (text == null) return '';
+  const str = String(text);
+  if (!query) return escapeHtml(str);
+  const q = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  try {
+    const parts = str.split(new RegExp(`(${q})`, 'gi'));
+    return parts.map(p => {
+      if (!p) return '';
+      if (p.toLowerCase() === query.toLowerCase()) return `<mark>${escapeHtml(p)}</mark>`;
+      return escapeHtml(p);
+    }).join('');
+  } catch (e) {
+    return escapeHtml(str);
+  }
+}
+
+// 防抖
+function debounce(fn, delay) {
+  let timer = null;
+  return function (...args) {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => { timer = null; fn.apply(this, args); }, delay);
+  };
+}
+
+// ============ localStorage 持久化 ============
+function loadFavorites() {
+  try { favorites = new Set(JSON.parse(localStorage.getItem('hsj_favorites') || '[]')); } catch (e) { favorites = new Set(); }
+}
+function saveFavorites() {
+  try { localStorage.setItem('hsj_favorites', JSON.stringify([...favorites])); } catch (e) {}
+}
+function toggleFavorite(id) {
+  if (favorites.has(id)) favorites.delete(id);
+  else favorites.add(id);
+  saveFavorites();
+  updateFavoritesUI();
+  if (currentView === 'grid') renderGrid();
+}
+function isFavorite(id) { return favorites.has(id); }
+
+function loadBookProgress() {
+  try { bookProgress = JSON.parse(localStorage.getItem('hsj_book_progress') || '{}'); } catch (e) { bookProgress = {}; }
+}
+function saveBookProgress() {
+  try { localStorage.setItem('hsj_book_progress', JSON.stringify(bookProgress)); } catch (e) {}
+}
+function getBookProgress(book) {
+  if (bookProgress[book.id] !== undefined) return bookProgress[book.id];
+  return book.progress || 0;
+}
+function updateBookProgress(id, progress) {
+  bookProgress[id] = Math.max(0, Math.min(100, parseInt(progress) || 0));
+  saveBookProgress();
+  showBookDetail(id);
+  if (currentView === 'books') renderBooks();
+}
+
+function loadTheme() {
+  theme = localStorage.getItem('hsj_theme') || 'light';
+  applyTheme();
+}
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', theme);
+  const dark = theme === 'dark';
+  const label = dark ? '🌙 暗色' : '☀️ 亮色';
+  const btn = document.getElementById('themeBtn'); if (btn) btn.textContent = dark ? '🌙' : '☀️';
+  const btn2 = document.getElementById('themeBtn2'); if (btn2) btn2.textContent = label;
+}
+function toggleTheme() {
+  theme = theme === 'dark' ? 'light' : 'dark';
+  try { localStorage.setItem('hsj_theme', theme); } catch (e) {}
+  applyTheme();
+  if (currentView === 'map' && map) setTimeout(() => map.invalidateSize(), 100);
+}
+
+// ============ 移动端侧边栏切换 ============
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const isOpen = sidebar.classList.toggle('open');
+  overlay.classList.toggle('hidden', !isOpen);
+}
+
+// ============ 筛选函数 ============
+function getFilteredEntrepreneurs() {
+  return ENTREPRENEURS.filter(e => {
+    if (favoritesOnly && !favorites.has(e.id)) return false;
+    if (activeCategories.size > 0 && !activeCategories.has(e.category)) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const matchName = e.name.toLowerCase().includes(q);
+      const matchCompany = e.company.toLowerCase().includes(q);
+      const matchBio = e.bio.toLowerCase().includes(q);
+      const matchEvents = e.events.some(ev => ev.title.toLowerCase().includes(q) || ev.desc.toLowerCase().includes(q));
+      if (!matchName && !matchCompany && !matchBio && !matchEvents) return false;
+    }
+    return true;
+  });
+}
+
+function getFilteredEvents() {
+  const ents = getFilteredEntrepreneurs();
+  let events = [];
+  ents.forEach(e => {
+    e.events.forEach(ev => {
+      if (ev.year >= yearFrom && ev.year <= yearTo) {
+        events.push({ ...ev, entId: e.id, entName: e.name, entCategory: e.category, entCompany: e.company });
+      }
+    });
+  });
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    events = events.filter(ev =>
+      ev.title.toLowerCase().includes(q) || ev.desc.toLowerCase().includes(q) ||
+      ev.entName.toLowerCase().includes(q) || ev.entCompany.toLowerCase().includes(q) ||
+      (ev.participants || []).some(p => p.toLowerCase().includes(q))
+    );
+  }
+  // 事件类型筛选
+  if (activeEventTypes.size > 0) {
+    events = events.filter(ev => ev.eventType && activeEventTypes.has(ev.eventType));
+  }
+  // 人物筛选
+  if (eventPerson) {
+    events = events.filter(ev => ev.entId === eventPerson);
+  }
+  return events.sort((a, b) => a.year - b.year);
+}
+
+function getFilteredRelations() {
+  const ents = getFilteredEntrepreneurs();
+  const entIds = new Set(ents.map(e => e.id));
+  let rels = [];
+  ents.forEach(e => {
+    (e.relations || []).forEach(r => {
+      if (entIds.has(r.target)) {
+        rels.push({ source: e.id, target: r.target, type: r.type, desc: r.desc, sourceName: e.name });
+      }
+    });
+  });
+  return rels;
+}
+
+// ============ 更新筛选徽章 ============
+function updateFilterBadge() {
+  const badge = document.getElementById('filterBadge');
+  badge.textContent = activeCategories.size > 0 ?
+    [...activeCategories].map(c => CATEGORIES[c].name).join(' / ') : (favoritesOnly ? '★ 收藏' : '全部行业');
+}
+
+function updateFavoritesUI() {
+  const n = favorites.size;
+  document.getElementById('favCountBadge').textContent = n;
+  const fs = document.getElementById('favCountSettings'); if (fs) fs.textContent = n + ' 位';
+  const btn = document.getElementById('favFilterBtn');
+  btn.classList.toggle('fav-filter-active', favoritesOnly);
+}
+
+// ============ 视图切换 ============
+// 显示骨架屏（count 个骨架卡片）
+function showSkeleton(container, count = 6) {
+  if (!container) return;
+  let html = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">';
+  for (let i = 0; i < count; i++) {
+    html += `
+      <div class="skeleton-card">
+        <div class="flex items-start gap-3 mb-3">
+          <div class="skeleton" style="width:48px;height:48px;border-radius:50%"></div>
+          <div class="flex-1">
+            <div class="skeleton skeleton-line" style="width:60%"></div>
+            <div class="skeleton skeleton-line" style="width:40%"></div>
+          </div>
+        </div>
+        <div class="skeleton skeleton-line" style="width:100%"></div>
+        <div class="skeleton skeleton-line" style="width:80%"></div>
+        <div class="skeleton skeleton-line" style="width:30%;margin-bottom:0"></div>
+      </div>
+    `;
+  }
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// 视图对应的容器 ID 映射（用于骨架屏）
+function getViewContainerId(view) {
+  const map = {
+    grid: 'gridContainer', timeline: 'timelineContainer', events: 'eventListContainer',
+    stats: 'statsContainer', compare: 'compareContainer', books: 'booksContainer'
+  };
+  return map[view] || null;
+}
+
+function showPanel(view) {
+  document.querySelectorAll('.view-panel').forEach(p => p.classList.add('hidden'));
+  const panel = document.getElementById(`panel-${view}`);
+  if (panel) panel.classList.remove('hidden');
+  document.querySelectorAll('.view-tab').forEach(t => {
+    const isActive = t.dataset.view === view;
+    t.classList.toggle('tab-active', isActive);
+    t.classList.toggle('tab-inactive', !isActive);
+    t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
+  currentView = view;
+
+  // 先显示骨架屏，再用 setTimeout 延迟渲染实际内容
+  const containerId = getViewContainerId(view);
+  const renderFn = {
+    grid: renderGrid, timeline: renderTimeline, network: renderNetwork, map: renderMap,
+    events: renderEventList, stats: renderStats, compare: renderCompare, books: renderBooks
+  }[view];
+  if (containerId) {
+    showSkeleton(document.getElementById(containerId), 6);
+    setTimeout(() => { if (renderFn) renderFn(); }, 50);
+  } else if (renderFn) {
+    renderFn();
+  }
+  updateHash();
+}
+
+// ============ 人物总览 ============
+function renderGrid() {
+  const container = document.getElementById('gridContainer');
+  const ents = getFilteredEntrepreneurs();
+
+  if (!ents.length) { container.innerHTML = '<div class="empty">暂无数据</div>'; return; }
+
+  const byCat = {};
+  ents.forEach(e => {
+    if (!byCat[e.category]) byCat[e.category] = [];
+    byCat[e.category].push(e);
+  });
+
+  let html = '';
+  Object.keys(CATEGORIES).forEach(catKey => {
+    if (!byCat[catKey]) return;
+    const cat = CATEGORIES[catKey];
+    const catEnts = byCat[catKey];
+    html += `
+      <div class="mb-8">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-2xl">${cat.icon}</span>
+          <h2 class="text-lg font-bold t-text">${cat.name}</h2>
+          <span class="badge">${catEnts.length} 位</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          ${catEnts.map(e => {
+            const initials = e.name.substring(0, 1);
+            const fav = isFavorite(e.id);
+            const cmp = compareList.has(e.id);
+            return `
+              <div class="card ent-card p-4 relative ${fav ? 'card-fav' : ''} ${cmp ? 'card-cmp' : ''}" onclick="showEntDetail('${e.id}')" tabindex="0">
+                <div class="absolute top-2 right-2 flex gap-1 z-10">
+                  <button class="fav-btn ${fav ? 'active' : ''}" onclick="event.stopPropagation();toggleFavorite('${e.id}')" title="收藏">${fav ? '★' : '☆'}</button>
+                  <label class="compare-chk" title="加入对比" onclick="event.stopPropagation()">
+                    <input type="checkbox" ${cmp ? 'checked' : ''} onchange="toggleCompare('${e.id}')">
+                    <span>⚖️</span>
+                  </label>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div class="ent-avatar" style="background:${getCatColor(e.category)}">${initials}</div>
+                  <div class="flex-1 min-w-0 pr-12">
+                    <div class="font-bold t-text text-sm">${highlightText(e.name, searchQuery)}</div>
+                    <div class="text-xs t-accent mt-0.5 truncate">${highlightText(e.company, searchQuery)}</div>
+                    <div class="text-xs t-muted mt-0.5">${e.birthYear}年 · ${e.birthPlace}</div>
+                  </div>
+                </div>
+                <div class="text-xs t-sec mt-3 line-clamp-2">${highlightText(e.bio.substring(0, 80) + (e.bio.length > 80 ? '…' : ''), searchQuery)}</div>
+                <div class="flex items-center gap-2 mt-3 text-xs t-dim">
+                  <span>📋 ${e.events.length}事件</span>
+                  <span>🔗 ${(e.relations || []).length}关系</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  });
+  container.innerHTML = html;
+}
+
+// ============ 热力图 ============
+function hexToRgb(hex) {
+  const m = hex.replace('#', '');
+  return { r: parseInt(m.substring(0, 2), 16), g: parseInt(m.substring(2, 4), 16), b: parseInt(m.substring(4, 6), 16) };
+}
+function interpolateColor(c1, c2, t) {
+  const p1 = hexToRgb(c1), p2 = hexToRgb(c2);
+  const r = Math.round(p1.r + (p2.r - p1.r) * t);
+  const g = Math.round(p1.g + (p2.g - p1.g) * t);
+  const b = Math.round(p1.b + (p2.b - p1.b) * t);
+  return `rgb(${r},${g},${b})`;
+}
+function renderHeatmap(events) {
+  const byYear = {};
+  events.forEach(e => { byYear[e.year] = (byYear[e.year] || 0) + 1; });
+  const years = Object.keys(byYear).map(Number).sort((a, b) => a - b);
+  if (!years.length) return '';
+  const minYear = years[0], maxYear = years[years.length - 1];
+  const maxCount = Math.max(...Object.values(byYear));
+  let cells = '';
+  for (let y = minYear; y <= maxYear; y++) {
+    const count = byYear[y] || 0;
+    const intensity = maxCount > 0 ? count / maxCount : 0;
+    const color = count === 0 ? 'var(--card-3)' : interpolateColor('#1f2937', '#3b82f6', intensity);
+    cells += `<div class="heat-cell" style="background:${color}" title="${y}年: ${count}个事件" onclick="scrollToYear(${y})">${y}</div>`;
+  }
+  return `
+    <div class="card p-4 mb-5">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-bold t-text">🔥 年度事件密度热力图</h3>
+        <span class="text-xs t-muted">点击年份跳转 · 悬停查看数量</span>
+      </div>
+      <div class="heatmap-grid">${cells}</div>
+    </div>
+  `;
+}
+function scrollToYear(year) {
+  const el = document.getElementById('year-' + year);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ============ 时间轴 ============
+function renderTimeline() {
+  const container = document.getElementById('timelineContainer');
+  const events = getFilteredEvents();
+
+  // 事件类型筛选栏（始终显示，便于清除筛选）
+  let html = renderEventTypeFilterBar();
+
+  if (!events.length) {
+    html += '<div class="empty">暂无事件</div>';
+    container.innerHTML = html;
+    return;
+  }
+
+  // 热力图
+  html += renderHeatmap(events);
+
+  // 按年份分组
+  const byYear = {};
+  events.forEach(e => {
+    if (!byYear[e.year]) byYear[e.year] = [];
+    byYear[e.year].push(e);
+  });
+  const years = Object.keys(byYear).sort((a, b) => a - b);
+
+  html += '<h2 class="text-xl font-bold t-text mb-1">商业大事记时间轴</h2>';
+  html += '<p class="text-sm t-muted mb-5">点击事件查看详情 · 共 ' + events.length + ' 个事件</p>';
+  html += '<div class="relative" style="padding-left:80px">';
+  html += '<div class="absolute top-0 bottom-0 w-0.5" style="background:var(--border);left:68px"></div>';
+
+  years.forEach(y => {
+    const evs = byYear[y];
+    html += `
+      <div class="relative mb-6" id="year-${y}">
+        <div class="absolute" style="left:-76px;top:0;">
+          <span class="text-sm font-bold t-accent">${y}</span>
+        </div>
+        <div class="absolute" style="left:-16px;top:6px;">
+          <div class="timeline-dot" style="background:${getCatColor(evs[0].entCategory)}"></div>
+        </div>
+        ${evs.map(ev => `
+          <div class="card p-4 mb-2 cursor-pointer event-card" onclick="showEntDetail('${ev.entId}')" tabindex="0">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 flex-wrap mb-1">
+                  ${ev.eventType ? `<span class="tag" style="background:${getEventTypeColor(ev.eventType)}22;color:${getEventTypeColor(ev.eventType)}">${getEventTypeIcon(ev.eventType)} ${getEventTypeName(ev.eventType)}</span>` : ''}
+                  <span class="font-medium t-text text-sm">${highlightText(ev.title, searchQuery)}</span>
+                </div>
+                <div class="text-xs t-sec mt-1">${highlightText(ev.desc.substring(0, 80) + (ev.desc.length > 80 ? '…' : ''), searchQuery)}</div>
+                <div class="flex flex-wrap gap-1 mt-2">
+                  <span class="tag" style="background:${getCatColor(ev.entCategory)}22;color:${getCatColor(ev.entCategory)}">${ev.entName}</span>
+                  ${(ev.participants || []).slice(0, 3).map(p => `<span class="tag">${highlightText(p, searchQuery)}</span>`).join('')}
+                  ${ev.location ? `<span class="tag tag-green">📍 ${ev.location}</span>` : ''}
+                </div>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ============ 关系网络 ============
+function renderNetworkToolbar() {
+  const toolbar = document.getElementById('networkToolbar');
+  toolbar.innerHTML = `
+    <div class="flex flex-wrap items-center gap-3">
+      <div class="flex flex-wrap gap-2">
+        ${Object.entries(RELATION_TYPES).map(([k, r]) => `
+          <div class="cat-chip ${activeRelationTypes.has(k) ? 'cat-chip-active' : ''}" style="--cat-color:${r.color}" onclick="toggleRelationType('${k}')">${r.icon} ${r.name}</div>
+        `).join('')}
+        ${activeRelationTypes.size > 0 ? `<div class="cat-chip" style="--cat-color:#64748b" onclick="clearRelationTypes()">✕ 清除</div>` : ''}
+      </div>
+      <div class="flex gap-1 ml-auto">
+        <button class="layout-btn ${networkLayout === 'force' ? 'layout-active' : ''}" onclick="setNetworkLayout('force')">力导向</button>
+        <button class="layout-btn ${networkLayout === 'circle' ? 'layout-active' : ''}" onclick="setNetworkLayout('circle')">环形</button>
+        <button class="layout-btn ${networkLayout === 'hierarchy' ? 'layout-active' : ''}" onclick="setNetworkLayout('hierarchy')">分层</button>
+      </div>
+      <input type="text" id="networkSearch" class="search-input" style="width:170px" placeholder="🔍 搜索节点…" value="${escapeHtml(networkSearchQuery)}" oninput="onNetworkSearch(this.value)">
+    </div>
+  `;
+}
+function toggleRelationType(t) {
+  if (activeRelationTypes.has(t)) activeRelationTypes.delete(t);
+  else activeRelationTypes.add(t);
+  renderNetwork();
+}
+function clearRelationTypes() {
+  activeRelationTypes.clear();
+  renderNetwork();
+}
+
+// ============ 事件类型筛选 ============
+function toggleEventType(t) {
+  if (activeEventTypes.has(t)) activeEventTypes.delete(t);
+  else activeEventTypes.add(t);
+  updateFilterBadge();
+  showPanel(currentView);
+}
+function clearEventTypes() {
+  activeEventTypes.clear();
+  updateFilterBadge();
+  showPanel(currentView);
+}
+// 渲染人物筛选下拉框
+function renderEventPersonFilter() {
+  const ents = getFilteredEntrepreneurs();
+  let html = '<select onchange="setEventPerson(this.value)" class="search-input text-sm" style="width:auto;padding:4px 8px;"><option value="">全部人物</option>';
+  ents.forEach(e => {
+    const sel = eventPerson === e.id ? ' selected' : '';
+    html += '<option value="' + e.id + '"' + sel + '>' + e.name + ' (' + e.company + ')</option>';
+  });
+  html += '</select>';
+  if (eventPerson) {
+    html += ' <button onclick="clearEventPerson()" class="cat-chip" style="--cat-color:#64748b">✕ 清除</button>';
+  }
+  return html;
+}
+function setEventPerson(id) {
+  eventPerson = id || null;
+  showPanel(currentView);
+}
+function clearEventPerson() {
+  eventPerson = null;
+  showPanel(currentView);
+}
+// 渲染事件类型筛选栏 HTML
+function renderEventTypeFilterBar() {
+  let chips = Object.entries(EVENT_TYPES).map(([k, t]) => {
+    const active = activeEventTypes.has(k);
+    return `<div class="cat-chip ${active ? 'cat-chip-active' : ''}" style="--cat-color:${t.color}" onclick="toggleEventType('${k}')">${t.icon} ${t.name}</div>`;
+  }).join('');
+  if (activeEventTypes.size > 0) {
+    chips += `<div class="cat-chip" style="--cat-color:#64748b" onclick="clearEventTypes()">✕ 清除</div>`;
+  }
+  return `<div class="flex flex-wrap gap-2 mb-4">${chips}</div>`;
+}
+function setNetworkLayout(l) {
+  networkLayout = l;
+  renderNetwork();
+}
+function onNetworkSearch(val) {
+  networkSearchQuery = val;
+  highlightNetworkNodes();
+}
+
+function renderNetwork() {
+  renderNetworkToolbar();
+  const container = document.getElementById('graph');
+  const detail = document.getElementById('networkDetail');
+  container.innerHTML = '';
+  detail.innerHTML = '<div class="empty">👈 点击节点查看详情</div>';
+
+  const ents = getFilteredEntrepreneurs();
+  let rels = getFilteredRelations();
+  // 关系类型筛选（仅影响网络图）
+  if (activeRelationTypes.size > 0) {
+    rels = rels.filter(r => activeRelationTypes.has(r.type));
+  }
+  if (!ents.length) return;
+
+  const w = container.clientWidth || 800;
+  const h = container.clientHeight || 600;
+
+  const svg = d3.select('#graph').append('svg')
+    .attr('width', w).attr('height', h)
+    .attr('viewBox', [0, 0, w, h]);
+
+  const g = svg.append('g');
+  const zoom = d3.zoom().scaleExtent([0.2, 4]).on('zoom', (event) => g.attr('transform', event.transform));
+  svg.call(zoom);
+
+  // 箭头标记
+  const defs = svg.append('defs');
+  Object.keys(CATEGORIES).forEach(catKey => {
+    defs.append('marker')
+      .attr('id', `arrow-${catKey}`)
+      .attr('viewBox', '-0 -5 10 10')
+      .attr('refX', 22).attr('refY', 0).attr('orient', 'auto')
+      .attr('markerWidth', 5).attr('markerHeight', 5)
+      .append('path').attr('d', 'M 0,-5 L 10,0 L 0,5')
+      .attr('fill', CATEGORIES[catKey].color);
+  });
+  Object.entries(RELATION_TYPES).forEach(([k, r]) => {
+    defs.append('marker')
+      .attr('id', `rarrow-${k}`)
+      .attr('viewBox', '-0 -5 10 10')
+      .attr('refX', 22).attr('refY', 0).attr('orient', 'auto')
+      .attr('markerWidth', 5).attr('markerHeight', 5)
+      .append('path').attr('d', 'M 0,-5 L 10,0 L 0,5')
+      .attr('fill', r.color);
+  });
+
+  // 链接
+  const links = rels.map(r => ({
+    source: ents.find(e => e.id === r.source),
+    target: ents.find(e => e.id === r.target),
+    ...r
+  })).filter(l => l.source && l.target);
+
+  const nodes = ents.map(e => ({ ...e }));
+
+  const sim = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(links).id(d => d.id).distance(100))
+    .force('charge', d3.forceManyBody().strength(-200))
+    .force('center', d3.forceCenter(w / 2, h / 2))
+    .force('collision', d3.forceCollide(35));
+  graphSimulation = sim;
+
+  // 绘制链接
+  const link = g.append('g').selectAll('line').data(links).join('line')
+    .attr('class', 'graph-link')
+    .attr('stroke', d => getRelationTypeColor(d.type))
+    .attr('stroke-width', 1.5)
+    .attr('stroke-opacity', 0.5)
+    .style('cursor', 'pointer')
+    .on('click', (event, d) => { event.stopPropagation(); showRelationDetail(d); });
+
+  // 绘制节点
+  const node = g.append('g').selectAll('g').data(nodes).join('g')
+    .attr('class', 'graph-node')
+    .call(d3.drag()
+      .on('start', (event, d) => { if (!event.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+      .on('drag', (event, d) => { d.fx = event.x; d.fy = event.y; })
+      .on('end', (event, d) => { if (!event.active) sim.alphaTarget(0); d.fx = null; d.fy = null; })
+    );
+
+  node.append('circle')
+    .attr('r', 16)
+    .attr('fill', d => getCatColor(d.category))
+    .attr('stroke', 'var(--bg)').attr('stroke-width', 2)
+    .style('filter', 'drop-shadow(0 0 6px rgba(59,130,246,0.3))');
+
+  node.append('text')
+    .text(d => d.name.substring(0, 1))
+    .attr('text-anchor', 'middle').attr('dy', '0.35em')
+    .attr('fill', 'white').attr('font-size', '12px').attr('font-weight', 'bold')
+    .style('pointer-events', 'none');
+
+  node.append('text')
+    .text(d => d.name)
+    .attr('text-anchor', 'middle').attr('dy', '32px')
+    .attr('fill', 'var(--text-sec)').attr('font-size', '10px')
+    .style('pointer-events', 'none');
+
+  node.on('click', (event, d) => { event.stopPropagation(); showNetworkDetail(d.id); })
+    .on('mouseover', (event, d) => { d3.select(event.currentTarget).select('circle').attr('r', 20); })
+    .on('mouseout', (event, d) => { d3.select(event.currentTarget).select('circle').attr('r', 16); });
+
+  svg.on('click', () => { detail.innerHTML = '<div class="empty">👈 点击节点查看详情</div>'; });
+
+  // 布局
+  if (networkLayout === 'circle') {
+    const n = nodes.length;
+    const radius = Math.min(w, h) / 2 - 70;
+    nodes.forEach((d, i) => {
+      const angle = (i / n) * 2 * Math.PI - Math.PI / 2;
+      d.x = w / 2 + radius * Math.cos(angle);
+      d.y = h / 2 + radius * Math.sin(angle);
+      d.fx = d.x; d.fy = d.y;
+    });
+    sim.alphaTarget(0).stop();
+    updatePositions();
+  } else if (networkLayout === 'hierarchy') {
+    const cats = Object.keys(CATEGORIES);
+    const byCat = {};
+    nodes.forEach(d => { (byCat[d.category] = byCat[d.category] || []).push(d); });
+    const layerH = h / (cats.length + 1);
+    cats.forEach((c, ci) => {
+      const list = byCat[c] || [];
+      const layerY = (ci + 1) * layerH;
+      const spacing = w / (list.length + 1);
+      list.forEach((d, i) => {
+        d.x = (i + 1) * spacing;
+        d.y = layerY;
+        d.fx = d.x; d.fy = d.y;
+      });
+    });
+    sim.alphaTarget(0).stop();
+    updatePositions();
+  } else {
+    sim.on('tick', updatePositions);
+  }
+
+  function updatePositions() {
+    link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+    node.attr('transform', d => `translate(${d.x},${d.y})`);
+  }
+
+  // 节点搜索高亮
+  highlightNetworkNodes();
+
+  // 图例
+  const legend = svg.append('g').attr('transform', `translate(10, 10)`);
+  const catKeys = Object.keys(CATEGORIES);
+  legend.append('rect').attr('width', 150).attr('height', catKeys.length * 22 + 10)
+    .attr('fill', 'var(--card)').attr('stroke', 'var(--border)').attr('rx', 8).attr('opacity', 0.92);
+  Object.entries(CATEGORIES).forEach(([key, cat], i) => {
+    const row = legend.append('g').attr('transform', `translate(10, ${i * 22 + 8})`);
+    row.append('circle').attr('r', 6).attr('fill', cat.color);
+    row.append('text').attr('x', 14).attr('y', 4).attr('fill', 'var(--text-sec)').attr('font-size', '11px').text(cat.name);
+  });
+}
+
+// 节点搜索高亮
+function highlightNetworkNodes() {
+  const q = networkSearchQuery.trim().toLowerCase();
+  d3.selectAll('.graph-node').each(function (d) {
+    const match = q && d.name.toLowerCase().includes(q);
+    d3.select(this).select('circle')
+      .transition().duration(200)
+      .attr('r', match ? 26 : 16)
+      .style('filter', match ? 'drop-shadow(0 0 14px rgba(251,191,36,0.9))' : 'drop-shadow(0 0 6px rgba(59,130,246,0.3))');
+  });
+}
+
+function showNetworkDetail(id) {
+  const ent = ENTREPRENEURS.find(e => e.id === id);
+  if (!ent) return;
+  const rels = getFilteredRelations().filter(r => r.source === id || r.target === id);
+  const detail = document.getElementById('networkDetail');
+  detail.innerHTML = `
+    <div class="flex items-center gap-3 mb-4">
+      <div class="ent-avatar" style="background:${getCatColor(ent.category)}">${ent.name.substring(0, 1)}</div>
+      <div>
+        <h3 class="text-base font-bold t-text">${ent.name}</h3>
+        <p class="text-xs t-accent">${ent.company}</p>
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-label">行业</div>
+      <span class="tag" style="background:${getCatColor(ent.category)}22;color:${getCatColor(ent.category)}">${getCatIcon(ent.category)} ${getCatName(ent.category)}</span>
+    </div>
+    <div class="detail-section">
+      <div class="detail-label">出生</div>
+      <div class="text-sm t-text">${ent.birthYear}年 · ${ent.birthPlace}</div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-label">简介</div>
+      <div class="text-sm t-sec">${ent.bio}</div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-label">相关关系 (${rels.length})</div>
+      ${rels.map(r => {
+        const otherId = r.source === id ? r.target : r.source;
+        const other = ENTREPRENEURS.find(e => e.id === otherId);
+        return `<div class="relation-item" onclick="showNetworkDetail('${otherId}')">
+          <div class="text-xs mb-1" style="color:${getRelationTypeColor(r.type)}">${getRelationTypeIcon(r.type)} ${getRelationTypeName(r.type)}</div>
+          <div class="text-sm t-text">${other ? other.name : '?'}</div>
+          <div class="text-xs t-muted mt-1">${r.desc}</div>
+        </div>`;
+      }).join('') || '<div class="text-xs t-dim">暂无关系数据</div>'}
+    </div>
+    <div class="mt-4">
+      <button onclick="showEntDetail('${ent.id}')" class="w-full py-2 t-card3 hover:opacity-80 t-accent rounded-lg text-sm transition-colors">查看完整档案 →</button>
+    </div>
+  `;
+}
+
+function showRelationDetail(rel) {
+  const source = ENTREPRENEURS.find(e => e.id === (rel.source.id || rel.source));
+  const target = ENTREPRENEURS.find(e => e.id === (rel.target.id || rel.target));
+  const detail = document.getElementById('networkDetail');
+  const rColor = getRelationTypeColor(rel.type);
+  detail.innerHTML = `
+    <div class="flex items-center gap-3 mb-4">
+      <div class="ent-avatar" style="background:${getCatColor(source.category)}">${source.name.substring(0, 1)}</div>
+      <div class="text-2xl t-muted">⇄</div>
+      <div class="ent-avatar" style="background:${getCatColor(target.category)}">${target.name.substring(0, 1)}</div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-label">关系类型</div>
+      <span class="tag" style="background:${rColor}22;color:${rColor}">${getRelationTypeIcon(rel.type)} ${getRelationTypeName(rel.type)}</span>
+    </div>
+    <div class="detail-section">
+      <div class="detail-label">详情</div>
+      <div class="text-sm t-sec">${rel.desc}</div>
+    </div>
+    <div class="flex gap-2 mt-4">
+      <button onclick="showNetworkDetail('${source.id}')" class="flex-1 py-2 t-card3 hover:opacity-80 t-text rounded-lg text-xs">${source.name}</button>
+      <button onclick="showNetworkDetail('${target.id}')" class="flex-1 py-2 t-card3 hover:opacity-80 t-text rounded-lg text-xs">${target.name}</button>
+    </div>
+  `;
+}
+
+// ============ 地图 ============
+function renderMap() {
+  if (!map) {
+    map = L.map('map', { zoomControl: true, attributionControl: false }).setView([35, 105], 4);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+  }
+  setTimeout(() => map.invalidateSize(), 100);
+
+  const ents = getFilteredEntrepreneurs();
+  const byLoc = {};
+  ents.forEach(e => {
+    if (!byLoc[e.birthPlace]) byLoc[e.birthPlace] = [];
+    byLoc[e.birthPlace].push(e);
+  });
+
+  const list = document.getElementById('mapLocationList');
+  list.innerHTML = '<h3 class="text-sm font-bold t-text mb-3">📍 城市</h3>' +
+    Object.entries(byLoc).sort((a, b) => b[1].length - a[1].length).map(([city, ents]) => {
+      return `<div class="card p-3 mb-2 cursor-pointer" onclick="focusMapLocation('${city}')">
+        <div class="flex items-center justify-between">
+          <div class="font-medium t-text text-sm">${city}</div>
+          <span class="badge">${ents.length}</span>
+        </div>
+        <div class="flex flex-wrap gap-1 mt-2">
+          ${ents.map(e => `<span class="text-xs" style="color:${getCatColor(e.category)}">${e.name}</span>`).join('、')}
+        </div>
+      </div>`;
+    }).join('');
+
+  map.eachLayer(l => { if (l instanceof L.Marker) map.removeLayer(l); });
+
+  Object.entries(byLoc).forEach(([city, ents]) => {
+    const loc = LOCATIONS.find(l => l.name === city);
+    if (loc && loc.coordinates) {
+      const colors = [...new Set(ents.map(e => getCatColor(e.category)))];
+      const marker = L.circleMarker([loc.coordinates[1], loc.coordinates[0]], {
+        radius: 8 + ents.length * 3,
+        fillColor: colors[0],
+        color: '#0a0e1a',
+        weight: 2,
+        fillOpacity: 0.8
+      }).addTo(map);
+      marker.bindPopup(`<b>${city}</b><br>${ents.map(e => e.name + ' (' + e.company + ')').join('<br>')}`);
+    }
+  });
+}
+
+function focusMapLocation(city) {
+  const loc = LOCATIONS.find(l => l.name === city);
+  if (loc && loc.coordinates && map) {
+    map.setView([loc.coordinates[1], loc.coordinates[0]], 8);
+  }
+}
+
+// ============ 事件列表 ============
+function renderEventList() {
+  const container = document.getElementById('eventListContainer');
+  const events = getFilteredEvents();
+
+  let html = `
+    <h2 class="text-xl font-bold t-text mb-1">商业大事记</h2>
+    <p class="text-sm t-muted mb-3">按时间顺序排列 · 共 ${events.length} 个事件</p>
+    <div class="flex flex-wrap gap-2 mb-3">
+      ${renderEventPersonFilter()}
+    </div>
+    ${renderEventTypeFilterBar()}
+  `;
+
+  if (!events.length) {
+    html += '<div class="empty">暂无事件</div>';
+    container.innerHTML = html;
+    return;
+  }
+
+  html += `
+    <div class="flex flex-col gap-3">
+      ${events.map(e => `
+        <div class="card p-4 cursor-pointer event-card" onclick="showEntDetail('${e.entId}')" tabindex="0">
+          <div class="flex items-start gap-4">
+            <div class="text-2xl font-bold w-16 text-right flex-shrink-0" style="color:${getCatColor(e.entCategory)}">${e.year}</div>
+            <div class="flex-1">
+              <div class="flex items-center gap-2 flex-wrap mb-1">
+                ${e.eventType ? `<span class="tag" style="background:${getEventTypeColor(e.eventType)}22;color:${getEventTypeColor(e.eventType)}">${getEventTypeIcon(e.eventType)} ${getEventTypeName(e.eventType)}</span>` : ''}
+                <span class="font-medium t-text">${highlightText(e.title, searchQuery)}</span>
+              </div>
+              <div class="text-sm t-sec mt-1">${highlightText(e.desc, searchQuery)}</div>
+              <div class="flex flex-wrap gap-1 mt-2">
+                <span class="tag" style="background:${getCatColor(e.entCategory)}22;color:${getCatColor(e.entCategory)}">${getCatIcon(e.entCategory)} ${highlightText(e.entName, searchQuery)}</span>
+                ${(e.participants || []).map(p => `<span class="tag">${highlightText(p, searchQuery)}</span>`).join('')}
+                ${e.location ? `<span class="tag tag-green">📍 ${e.location}</span>` : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  container.innerHTML = html;
+}
+
+// ============ 行业统计 ============
+function renderStats() {
+  const container = document.getElementById('statsContainer');
+  const ents = getFilteredEntrepreneurs();
+
+  const byCat = {};
+  ents.forEach(e => {
+    if (!byCat[e.category]) byCat[e.category] = { count: 0, events: 0, rels: 0 };
+    byCat[e.category].count++;
+    byCat[e.category].events += e.events.length;
+    byCat[e.category].rels += (e.relations || []).length;
+  });
+
+  const byDecade = {};
+  ents.forEach(e => {
+    const decade = Math.floor(e.birthYear / 10) * 10;
+    if (!byDecade[decade]) byDecade[decade] = [];
+    byDecade[decade].push(e);
+  });
+
+  const byCity = {};
+  ents.forEach(e => {
+    if (!byCity[e.birthPlace]) byCity[e.birthPlace] = 0;
+    byCity[e.birthPlace]++;
+  });
+
+  const maxCat = Math.max(1, ...Object.values(byCat).map(v => v.count));
+  const maxDecade = Math.max(1, ...Object.values(byDecade).map(v => v.length));
+  const maxCity = Math.max(1, ...Object.values(byCity));
+
+  container.innerHTML = `
+    <h2 class="text-xl font-bold t-text mb-1">行业统计概览</h2>
+    <p class="text-sm t-muted mb-5">${ents.length} 位企业家 · ${getFilteredEvents().length} 个事件 · ${favorites.size} 位收藏</p>
+
+    <div class="card p-5 mb-5">
+      <h3 class="text-sm font-bold t-text mb-4">🏭 行业分布</h3>
+      <div class="space-y-3">
+        ${Object.entries(byCat).sort((a, b) => b[1].count - a[1].count).map(([cat, v]) => `
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-sm t-sec">${getCatIcon(cat)} ${getCatName(cat)}</span>
+              <span class="text-sm t-text font-bold">${v.count} 人</span>
+            </div>
+            <div class="h-3 rounded-full overflow-hidden" style="background:var(--card-3)">
+              <div class="bar-chart-bar h-full rounded-full" style="width:${(v.count / maxCat * 100)}%;background:${getCatColor(cat)}"></div>
+            </div>
+            <div class="text-xs t-dim mt-1">${v.events} 个事件 · ${v.rels} 条关系</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="card p-5 mb-5">
+      <h3 class="text-sm font-bold t-text mb-4">📅 出生年代分布</h3>
+      <div class="space-y-2">
+        ${Object.keys(byDecade).sort((a, b) => a - b).map(decade => {
+          const list = byDecade[decade];
+          return `
+            <div class="flex items-center gap-3">
+              <span class="text-xs t-muted w-20 flex-shrink-0">${decade}s</span>
+              <div class="flex-1 h-6 rounded-full overflow-hidden" style="background:var(--card-3)">
+                <div class="bar-chart-bar h-full rounded-full flex items-center px-2" style="width:${(list.length / maxDecade * 100)}%;background:#3b82f6">
+                  <span class="text-xs text-white font-bold">${list.length}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="card p-5">
+      <h3 class="text-sm font-bold t-text mb-4">📍 籍贯城市分布</h3>
+      <div class="space-y-2">
+        ${Object.entries(byCity).sort((a, b) => b[1] - a[1]).map(([city, count]) => `
+          <div class="flex items-center gap-3">
+            <span class="text-xs t-sec w-16 flex-shrink-0">${city}</span>
+            <div class="flex-1 h-5 rounded-full overflow-hidden" style="background:var(--card-3)">
+              <div class="bar-chart-bar h-full rounded-full" style="width:${(count / maxCity * 100)}%;background:#10b981"></div>
+            </div>
+            <span class="text-xs t-text w-6 text-right">${count}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ============ 人物详情 ============
+function showEntDetail(id) {
+  const ent = ENTREPRENEURS.find(e => e.id === id);
+  if (!ent) return;
+  const catColor = getCatColor(ent.category);
+  const rels = (ent.relations || []).map(r => {
+    const target = ENTREPRENEURS.find(e => e.id === r.target);
+    return { ...r, targetName: target ? target.name : '?', targetCat: target ? target.category : '' };
+  });
+  const fav = isFavorite(id);
+  const cmp = compareList.has(id);
+
+  document.getElementById('entModalContent').innerHTML = `
+    <div class="flex items-start gap-4 mb-5">
+      <div class="ent-avatar" style="background:${catColor};width:64px;height:64px;font-size:28px">${ent.name.substring(0, 1)}</div>
+      <div class="flex-1">
+        <h2 class="text-2xl font-bold t-text">${ent.name}</h2>
+        <p class="text-sm mt-1" style="color:${catColor}">${ent.title}</p>
+        <div class="flex flex-wrap gap-2 mt-2">
+          <span class="tag" style="background:${catColor}22;color:${catColor}">${getCatIcon(ent.category)} ${getCatName(ent.category)}</span>
+          <span class="badge">${ent.company}</span>
+          <span class="badge">${ent.birthYear}年 · ${ent.birthPlace}</span>
+        </div>
+      </div>
+      <div class="flex flex-col gap-2">
+        <button class="fav-btn ${fav ? 'active' : ''}" style="font-size:22px" onclick="toggleFavorite('${ent.id}');showEntDetail('${ent.id}')" title="收藏">${fav ? '★' : '☆'}</button>
+        <label class="compare-chk" style="font-size:20px" title="加入对比">
+          <input type="checkbox" ${cmp ? 'checked' : ''} onchange="toggleCompare('${ent.id}');showEntDetail('${ent.id}')">
+          <span>⚖️</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-label">人物简介</div>
+      <p class="text-sm t-sec leading-relaxed">${ent.bio}</p>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-label">关键事件 (${ent.events.length})</div>
+      <div class="space-y-3 mt-2">
+        ${ent.events.sort((a, b) => a.year - b.year).map(ev => `
+          <div class="rounded-lg p-3" style="background:var(--card-2);border:1px solid var(--border)">
+            <div class="flex items-center gap-2 mb-1 flex-wrap">
+              <span class="text-lg font-bold" style="color:${catColor}">${ev.year}</span>
+              ${ev.eventType ? `<span class="tag" style="background:${getEventTypeColor(ev.eventType)}22;color:${getEventTypeColor(ev.eventType)}">${getEventTypeIcon(ev.eventType)} ${getEventTypeName(ev.eventType)}</span>` : ''}
+              <span class="font-medium t-text text-sm">${ev.title}</span>
+            </div>
+            <p class="text-xs t-sec">${ev.desc}</p>
+            <div class="flex flex-wrap gap-1 mt-2">
+              ${(ev.participants || []).map(p => `<span class="tag">${p}</span>`).join('')}
+              ${ev.location ? `<span class="tag tag-green">📍 ${ev.location}</span>` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    ${rels.length > 0 ? `
+    <div class="detail-section">
+      <div class="detail-label">商业关系 (${rels.length})</div>
+      <div class="space-y-2 mt-2">
+        ${rels.map(r => `
+          <div class="relation-item" onclick="closeEntModal();showEntDetail('${r.target}')">
+            <div class="flex items-center gap-2">
+              <span class="tag" style="background:${getRelationTypeColor(r.type)}22;color:${getRelationTypeColor(r.type)}">${getRelationTypeIcon(r.type)} ${getRelationTypeName(r.type)}</span>
+              <span class="text-sm t-text">${r.targetName}</span>
+            </div>
+            <div class="text-xs t-muted mt-1">${r.desc}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    ` : ''}
+  `;
+  document.getElementById('entModal').classList.remove('hidden');
+}
+
+function closeEntModal() {
+  document.getElementById('entModal').classList.add('hidden');
+}
+
+// ============ 分类筛选 ============
+function renderCategoryFilters() {
+  const container = document.getElementById('categoryFilters');
+  container.innerHTML = Object.entries(CATEGORIES).map(([key, cat]) => {
+    const count = ENTREPRENEURS.filter(e => e.category === key).length;
+    return `<div class="cat-chip ${activeCategories.has(key) ? 'cat-chip-active' : ''}"
+      style="--cat-color:${cat.color}"
+      onclick="toggleCategory('${key}')">${cat.icon} ${cat.name} <span style="opacity:0.7">${count}</span></div>`;
+  }).join('');
+}
+
+function toggleCategory(cat) {
+  if (activeCategories.has(cat)) activeCategories.delete(cat);
+  else activeCategories.add(cat);
+  renderCategoryFilters();
+  updateFilterBadge();
+  updateHash();
+  showPanel(currentView);
+}
+
+// ============ 收藏筛选 ============
+function toggleFavoritesFilter() {
+  favoritesOnly = !favoritesOnly;
+  updateFavoritesUI();
+  updateFilterBadge();
+  updateHash();
+  showPanel(currentView);
+}
+
+// ============ 对比功能 ============
+function toggleCompare(id) {
+  if (compareList.has(id)) {
+    compareList.delete(id);
+  } else {
+    if (compareList.size >= 3) { alert('最多对比 3 位企业家'); return; }
+    compareList.add(id);
+  }
+  updateCompareUI();
+  if (currentView === 'grid') renderGrid();
+}
+function clearCompare() {
+  compareList.clear();
+  updateCompareUI();
+  if (currentView === 'grid') renderGrid();
+  if (currentView === 'compare') renderCompare();
+}
+function startCompare() {
+  if (compareList.size < 2) { alert('请至少选择 2 位企业家'); return; }
+  showPanel('compare');
+}
+function updateCompareUI() {
+  const n = compareList.size;
+  document.getElementById('compareCount').textContent = n;
+  const btn = document.getElementById('startCompareBtn');
+  btn.disabled = n < 2;
+}
+function renderCompare() {
+  const container = document.getElementById('compareContainer');
+  const ids = [...compareList];
+  if (ids.length < 2) {
+    container.innerHTML = '<div class="empty">请在人物总览或详情中选择 2-3 位企业家加入对比，再点击“开始对比”</div>';
+    return;
+  }
+  const ents = ids.map(id => ENTREPRENEURS.find(e => e.id === id)).filter(Boolean);
+  const colors = ['#3b82f6', '#ef4444', '#10b981'];
+
+  // 收集所有年份
+  const allYears = new Set();
+  ents.forEach(e => e.events.forEach(ev => allYears.add(ev.year)));
+  const years = [...allYears].sort((a, b) => a - b);
+
+  let html = `
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h2 class="text-xl font-bold t-text">⚖️ 企业家横向对比</h2>
+        <p class="text-sm t-muted mt-1">对比 ${ents.length} 位企业家 · 事件按年份对齐</p>
+      </div>
+      <button onclick="clearCompare()" class="cat-chip" style="--cat-color:#ef4444">✕ 清除对比</button>
+    </div>
+  `;
+
+  // 基本信息对比表
+  html += `<div class="card p-5 mb-5 overflow-x-auto"><table class="cmp-table w-full"><thead><tr><th class="t-muted">项目</th>`;
+  ents.forEach((e, i) => {
+    html += `<th class="cmp-col" style="border-color:${colors[i]};color:${colors[i]}">${e.name}</th>`;
+  });
+  html += `</tr></thead><tbody>`;
+  const rows = [
+    ['行业', e => `${getCatIcon(e.category)} ${getCatName(e.category)}`],
+    ['公司', e => e.company],
+    ['出生年份', e => e.birthYear + '年'],
+    ['籍贯', e => e.birthPlace],
+    ['头衔', e => e.title],
+    ['事件数', e => e.events.length],
+    ['关系数', e => (e.relations || []).length],
+  ];
+  rows.forEach(([label, fn]) => {
+    html += `<tr><td class="t-muted">${label}</td>`;
+    ents.forEach(e => { html += `<td class="t-text">${fn(e)}</td>`; });
+    html += `</tr>`;
+  });
+  html += `</tbody></table></div>`;
+
+  // 事件时间线对照
+  html += `<div class="card p-5"><h3 class="text-sm font-bold t-text mb-4">📅 事件时间线对照</h3>`;
+  html += `<div class="overflow-x-auto"><table class="cmp-table w-full"><thead><tr><th class="t-muted">年份</th>`;
+  ents.forEach((e, i) => { html += `<th class="cmp-col" style="border-color:${colors[i]};color:${colors[i]}">${e.name}</th>`; });
+  html += `</tr></thead><tbody>`;
+  if (!years.length) {
+    html += `<tr><td colspan="${ents.length + 1}" class="t-dim text-center">暂无事件</td></tr>`;
+  } else {
+    years.forEach(y => {
+      html += `<tr><td class="t-accent font-bold">${y}</td>`;
+      ents.forEach(e => {
+        const evs = e.events.filter(ev => ev.year === y).sort((a, b) => 0);
+        html += `<td class="t-sec" style="vertical-align:top">`;
+        evs.forEach(ev => {
+          html += `<div class="mb-2 pb-2" style="border-left:3px solid var(--accent);padding-left:8px">
+            ${ev.eventType ? `<span class="tag" style="background:${getEventTypeColor(ev.eventType)}22;color:${getEventTypeColor(ev.eventType)}">${getEventTypeIcon(ev.eventType)} ${getEventTypeName(ev.eventType)}</span> ` : ''}
+            <div class="text-sm t-text mt-1">${ev.title}</div>
+            <div class="text-xs t-muted mt-0.5">${ev.desc}</div>
+          </div>`;
+        });
+        if (!evs.length) html += `<span class="t-dim">—</span>`;
+        html += `</td>`;
+      });
+      html += `</tr>`;
+    });
+  }
+  html += `</tbody></table></div></div>`;
+
+  container.innerHTML = html;
+}
+
+// ============ 设置面板 ============
+function toggleSettings() {
+  const p = document.getElementById('settingsPanel');
+  p.classList.toggle('hidden');
+  if (!p.classList.contains('hidden')) updateFavoritesUI();
+}
+
+// ============ 数据导出 ============
+function toggleExportMenu() {
+  const p = document.getElementById('exportPanel');
+  p.classList.toggle('hidden');
+}
+
+// 导出当前筛选结果为 CSV / JSON
+function exportData(format) {
+  const ents = getFilteredEntrepreneurs();
+  const events = getFilteredEvents();
+  const rels = getFilteredRelations();
+  let blob, filename;
+
+  if (format === 'csv') {
+    // CSV 表头：企业家名,公司,行业,出生年,出生地,事件数,关系数
+    const rows = [['企业家名', '公司', '行业', '出生年', '出生地', '事件数', '关系数']];
+    ents.forEach(e => {
+      rows.push([
+        e.name, e.company, getCatName(e.category), e.birthYear, e.birthPlace,
+        e.events.length, (e.relations || []).length
+      ]);
+    });
+    const csv = rows.map(r => r.map(c => {
+      const s = String(c == null ? '' : c);
+      return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g, '""') + '"' : s;
+    }).join(',')).join('\n');
+    // 添加 BOM 以支持 Excel 正确识别中文
+    blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    filename = 'huashangji_企业家_' + new Date().toISOString().slice(0, 10) + '.csv';
+  } else if (format === 'json') {
+    // 导出完整数据
+    const data = {
+      exportDate: new Date().toISOString(),
+      filters: {
+        categories: [...activeCategories],
+        searchQuery, yearFrom, yearTo, favoritesOnly
+      },
+      entrepreneurs: ents,
+      events: events,
+      relations: rels
+    };
+    blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    filename = 'huashangji_数据_' + new Date().toISOString().slice(0, 10) + '.json';
+  } else {
+    return;
+  }
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toggleExportMenu();
+}
+
+// 导出关系网络为 SVG 图片
+function exportNetworkSVG() {
+  const svgEl = document.querySelector('#graph svg');
+  if (!svgEl) { alert('请先切换到「关系」视图并渲染网络图'); return; }
+
+  // 克隆 SVG 并内联样式以确保可独立查看
+  const clone = svgEl.cloneNode(true);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+
+  // 提取当前主题背景色
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0a0e1a';
+  const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  bgRect.setAttribute('width', '100%');
+  bgRect.setAttribute('height', '100%');
+  bgRect.setAttribute('fill', bg);
+  clone.insertBefore(bgRect, clone.firstChild);
+
+  const serializer = new XMLSerializer();
+  const svgStr = '<?xml version="1.0" encoding="UTF-8"?>\n' + serializer.serializeToString(clone);
+  const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'huashangji_关系网络_' + new Date().toISOString().slice(0, 10) + '.svg';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toggleExportMenu();
+}
+
+// ============ URL Hash 路由 ============
+function updateHash() {
+  if (isHashApplying) return;
+  const parts = [`view=${currentView}`];
+  if (activeCategories.size > 0) parts.push(`cat=${[...activeCategories].join(',')}`);
+  if (searchQuery) parts.push(`q=${encodeURIComponent(searchQuery)}`);
+  if (yearFrom !== 1980 || yearTo !== 2026) { parts.push(`yf=${yearFrom}`); parts.push(`yt=${yearTo}`); }
+  if (favoritesOnly) parts.push('fav=1');
+  const hash = '#' + parts.join('&');
+  if (location.hash !== hash) history.replaceState(null, '', hash);
+}
+function parseHash() {
+  const hash = location.hash.substring(1);
+  if (!hash) return false;
+  const params = {};
+  hash.split('&').forEach(pair => {
+    const idx = pair.indexOf('=');
+    if (idx > 0) { params[pair.substring(0, idx)] = decodeURIComponent(pair.substring(idx + 1)); }
+  });
+  let changed = false;
+  if (params.view) { currentView = params.view; changed = true; }
+  if (params.cat !== undefined) {
+    activeCategories = new Set(params.cat.split(',').filter(Boolean));
+    renderCategoryFilters();
+    changed = true;
+  } else if (activeCategories.size > 0) {
+    activeCategories = new Set(); renderCategoryFilters(); changed = true;
+  }
+  if (params.q !== undefined) {
+    searchQuery = params.q;
+    const si = document.getElementById('searchInput'); if (si) si.value = params.q;
+    changed = true;
+  }
+  if (params.yf) { yearFrom = parseInt(params.yf) || 1980; document.getElementById('yearFrom').value = yearFrom; changed = true; }
+  if (params.yt) { yearTo = parseInt(params.yt) || 2026; document.getElementById('yearTo').value = yearTo; changed = true; }
+  if (params.fav !== undefined) { favoritesOnly = params.fav === '1'; changed = true; }
+  return changed;
+}
+
+// ============ 搜索状态 ============
+function showSearchStatus(busy) {
+  const el = document.getElementById('searchStatus');
+  el.textContent = busy ? '搜索中…' : '';
+}
+
+// ============ 书库 ============
+let bookSearchQuery = '';
+let activeBookCategories = new Set();
+let bookSearchTimer = null;
+let bookSortBy = 'category'; // 'progress' | 'title' | 'notes' | 'category'
+
+function setBookSort(sort) { bookSortBy = sort; renderBooks(); }
+
+// 对书籍列表进行排序
+function sortBooks(books) {
+  const sorted = [...books];
+  if (bookSortBy === 'progress') {
+    sorted.sort((a, b) => getBookProgress(b) - getBookProgress(a));
+  } else if (bookSortBy === 'title') {
+    sorted.sort((a, b) => a.title.localeCompare(b.title, 'zh'));
+  } else if (bookSortBy === 'notes') {
+    sorted.sort((a, b) => (b.notes || 0) - (a.notes || 0));
+  }
+  // category 保持原有按分类分组顺序
+  return sorted;
+}
+
+function getFilteredBooks() {
+  return BOOKS.filter(b => {
+    if (activeBookCategories.size > 0 && !activeBookCategories.has(b.category)) return false;
+    if (bookSearchQuery) {
+      const q = bookSearchQuery.toLowerCase();
+      if (!b.title.toLowerCase().includes(q) && !b.author.toLowerCase().includes(q) && !b.desc.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function renderBooks() {
+  const container = document.getElementById('booksContainer');
+  const books = getFilteredBooks();
+
+  if (!books.length) { container.innerHTML = '<div class="empty">暂无书籍</div>'; return; }
+
+  const totalNotes = books.reduce((s, b) => s + (b.notes || 0), 0);
+  const totalUnread = books.reduce((s, b) => s + (b.unread || 0), 0);
+  const totalStarred = books.reduce((s, b) => s + (b.starred || 0), 0);
+  const readingCount = books.filter(b => getBookProgress(b) > 0).length;
+  const customCount = books.filter(b => bookProgress[b.id] !== undefined).length;
+
+  let html = `
+    <h2 class="text-xl font-bold t-text mb-1">📚 读书笔记书库</h2>
+    <p class="text-sm t-muted mb-4">来源：example.com · ${books.length} 本书 · ${totalNotes} 条笔记 · ${totalUnread} 条未读 · ${totalStarred} 条精选 · ${readingCount} 本在读 · ${customCount} 本已自定义进度</p>
+  `;
+
+  html += `
+    <div class="flex gap-3 mb-4">
+      <input type="text" id="bookSearchInput" class="search-input" placeholder="🔍 搜索书名/作者/内容…" value="${escapeHtml(bookSearchQuery)}" oninput="onBookSearch(this.value)">
+    </div>
+  `;
+
+  html += '<div class="flex flex-wrap gap-2 mb-5">';
+  html += `<div class="cat-chip ${activeBookCategories.size === 0 ? 'cat-chip-active' : ''}" style="--cat-color:#3b82f6" onclick="clearBookCatFilter()">全部 ${books.length}</div>`;
+  Object.entries(BOOK_CATEGORIES).forEach(([key, cat]) => {
+    const count = BOOKS.filter(b => b.category === key).length;
+    if (count > 0) {
+      html += `<div class="cat-chip ${activeBookCategories.has(key) ? 'cat-chip-active' : ''}" style="--cat-color:${cat.color}" onclick="toggleBookCategory('${key}')">${cat.icon} ${cat.name} ${count}</div>`;
+    }
+  });
+  html += '</div>';
+
+  // 排序下拉框
+  html += `
+    <div class="flex items-center gap-2 mb-5">
+      <span class="text-xs t-muted">排序：</span>
+      <select id="bookSortSelect" class="search-input" style="width:auto;display:inline-block" onchange="setBookSort(this.value)" aria-label="书籍排序方式">
+        <option value="category" ${bookSortBy === 'category' ? 'selected' : ''}>按分类</option>
+        <option value="progress" ${bookSortBy === 'progress' ? 'selected' : ''}>按进度</option>
+        <option value="title" ${bookSortBy === 'title' ? 'selected' : ''}>按书名</option>
+        <option value="notes" ${bookSortBy === 'notes' ? 'selected' : ''}>按笔记数</option>
+      </select>
+    </div>
+  `;
+
+  // 阅读进度分布条形图
+  const notStarted = books.filter(b => getBookProgress(b) === 0).length;
+  const inProgress = books.filter(b => { const p = getBookProgress(b); return p > 0 && p < 100; }).length;
+  const finished = books.filter(b => getBookProgress(b) >= 100).length;
+  const maxDist = Math.max(1, notStarted, inProgress, finished);
+  html += `
+    <div class="card p-5 mb-5">
+      <h3 class="text-sm font-bold t-text mb-4">📊 阅读进度分布</h3>
+      <div class="space-y-3">
+        <div class="flex items-center gap-3">
+          <span class="text-xs t-sec w-20 flex-shrink-0">⚪ 未开始</span>
+          <div class="flex-1 h-6 rounded-full overflow-hidden" style="background:var(--card-3)">
+            <div class="bar-chart-bar h-full rounded-full flex items-center px-2" style="width:${(notStarted / maxDist * 100)}%;background:#64748b">
+              <span class="text-xs text-white font-bold">${notStarted}</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs t-sec w-20 flex-shrink-0">🟡 进行中</span>
+          <div class="flex-1 h-6 rounded-full overflow-hidden" style="background:var(--card-3)">
+            <div class="bar-chart-bar h-full rounded-full flex items-center px-2" style="width:${(inProgress / maxDist * 100)}%;background:#fbbf24">
+              <span class="text-xs text-white font-bold">${inProgress}</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs t-sec w-20 flex-shrink-0">🟢 已读完</span>
+          <div class="flex-1 h-6 rounded-full overflow-hidden" style="background:var(--card-3)">
+            <div class="bar-chart-bar h-full rounded-full flex items-center px-2" style="width:${(finished / maxDist * 100)}%;background:#34d399">
+              <span class="text-xs text-white font-bold">${finished}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // 渲染单本书卡片（抽取为函数避免重复）
+  function renderBookCard(b) {
+    const prog = getBookProgress(b);
+    const progressColor = prog > 0 ? (prog >= 100 ? '#34d399' : '#fbbf24') : '#374151';
+    const isCustom = bookProgress[b.id] !== undefined;
+    return `
+      <div class="card p-4 cursor-pointer book-card" onclick="showBookDetail('${b.id}')" tabindex="0">
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex-1 min-w-0">
+            <div class="font-bold t-text text-sm">${highlightText(b.title, bookSearchQuery)}</div>
+            <div class="text-xs t-accent mt-0.5">${highlightText(b.author, bookSearchQuery)}</div>
+          </div>
+          ${prog > 0 ? `<span class="text-xs font-bold" style="color:${progressColor}">${prog}%${isCustom ? ' ✎' : ''}</span>` : ''}
+        </div>
+        <div class="text-xs t-sec mt-2 line-clamp-2">${highlightText(b.desc, bookSearchQuery)}</div>
+        <div class="flex items-center gap-2 mt-3 text-xs t-dim">
+          ${b.notes > 0 ? `<span>📝 ${b.notes}条</span>` : ''}
+          ${b.unread > 0 ? `<span style="color:#fbbf24">📖 ${b.unread}未读</span>` : ''}
+          ${b.starred > 0 ? `<span style="color:#f472b6">⭐ ${b.starred}</span>` : ''}
+          ${b.notes === 0 ? '<span>待阅读</span>' : ''}
+        </div>
+        ${prog > 0 ? `<div class="mt-2 h-1.5 rounded-full overflow-hidden" style="background:var(--card-3)"><div class="h-full rounded-full" style="width:${prog}%;background:${progressColor}"></div></div>` : ''}
+      </div>
+    `;
+  }
+
+  if (bookSortBy === 'category') {
+    // 按分类分组展示
+    const byCat = {};
+    books.forEach(b => { if (!byCat[b.category]) byCat[b.category] = []; byCat[b.category].push(b); });
+
+    Object.keys(BOOK_CATEGORIES).forEach(catKey => {
+      if (!byCat[catKey]) return;
+      const cat = BOOK_CATEGORIES[catKey];
+      const catBooks = byCat[catKey];
+      html += `
+        <div class="mb-8">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-2xl">${cat.icon}</span>
+            <h3 class="text-lg font-bold t-text">${cat.name}</h3>
+            <span class="badge">${catBooks.length} 本</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            ${catBooks.map(renderBookCard).join('')}
+          </div>
+        </div>
+      `;
+    });
+  } else {
+    // 按选定方式排序后平铺展示
+    const sortedBooks = sortBooks(books);
+    const sortLabel = { progress: '进度', title: '书名', notes: '笔记数' }[bookSortBy];
+    html += `
+      <div class="mb-8">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-2xl">📑</span>
+          <h3 class="text-lg font-bold t-text">按${sortLabel}排序</h3>
+          <span class="badge">${sortedBooks.length} 本</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          ${sortedBooks.map(renderBookCard).join('')}
+        </div>
+      </div>
+    `;
+  }
+  container.innerHTML = html;
+}
+
+function onBookSearch(val) {
+  bookSearchQuery = val;
+  const status = document.getElementById('searchStatus');
+  if (bookSearchTimer) clearTimeout(bookSearchTimer);
+  bookSearchTimer = setTimeout(() => { bookSearchTimer = null; renderBooks(); }, 300);
+}
+
+function toggleBookCategory(cat) {
+  if (activeBookCategories.has(cat)) activeBookCategories.delete(cat);
+  else activeBookCategories.add(cat);
+  renderBooks();
+}
+
+function clearBookCatFilter() {
+  activeBookCategories.clear();
+  renderBooks();
+}
+
+function showBookDetail(id) {
+  const book = BOOKS.find(b => b.id === id);
+  if (!book) return;
+  const cat = BOOK_CATEGORIES[book.category];
+  const prog = getBookProgress(book);
+  const isCustom = bookProgress[book.id] !== undefined;
+  const progressColor = prog > 0 ? (prog >= 100 ? '#34d399' : '#fbbf24') : '#374151';
+
+  // 关联企业家数据
+  const linked = (book.linkedEntrepreneurs || []).map(eid => ENTREPRENEURS.find(e => e.id === eid)).filter(Boolean);
+  const linkedHtml = linked.length > 0 ? linked.map(e => {
+    const eColor = getCatColor(e.category);
+    return `<div class="relation-item" onclick="closeEntModal();showEntDetail('${e.id}')">
+      <div class="flex items-center gap-2">
+        <div class="ent-avatar" style="background:${eColor};width:32px;height:32px;font-size:14px">${e.name.substring(0, 1)}</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm t-text truncate">${e.name}</div>
+          <div class="text-xs t-muted truncate">${e.company}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('') : '';
+
+  document.getElementById('entModalContent').innerHTML = `
+    <div class="flex items-start gap-4 mb-5">
+      <div class="ent-avatar" style="background:${cat.color};width:64px;height:64px;font-size:28px">${cat.icon}</div>
+      <div class="flex-1">
+        <h2 class="text-2xl font-bold t-text">${book.title}</h2>
+        <p class="text-sm mt-1" style="color:${cat.color}">${book.author}</p>
+        <div class="flex flex-wrap gap-2 mt-2">
+          <span class="tag" style="background:${cat.color}22;color:${cat.color}">${cat.icon} ${cat.name}</span>
+          ${prog > 0 ? `<span class="badge" style="color:${progressColor}">进度 ${prog}%${isCustom ? ' ✎自定义' : ''}</span>` : '<span class="badge">待阅读</span>'}
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-label">简介</div>
+      <p class="text-sm t-sec leading-relaxed">${book.desc}</p>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-label">复习统计</div>
+      <div class="grid grid-cols-3 gap-3 mt-2">
+        <div class="stat-box">
+          <div class="text-2xl font-bold t-accent">${book.notes || 0}</div>
+          <div class="text-xs t-muted">笔记总数</div>
+        </div>
+        <div class="stat-box">
+          <div class="text-2xl font-bold" style="color:#fbbf24">${book.unread || 0}</div>
+          <div class="text-xs t-muted">未读笔记</div>
+        </div>
+        <div class="stat-box">
+          <div class="text-2xl font-bold" style="color:#f472b6">${book.starred || 0}</div>
+          <div class="text-xs t-muted">精选笔记</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-label">阅读进度${isCustom ? '（已自定义）' : ''}</div>
+      <div class="mt-2 h-3 rounded-full overflow-hidden" style="background:var(--card-3)">
+        <div class="h-full rounded-full" style="width:${prog}%;background:${progressColor}"></div>
+      </div>
+      <div class="flex items-center gap-3 mt-2">
+        <input type="range" min="0" max="100" value="${prog}" oninput="updateBookProgress('${book.id}', this.value)" class="flex-1">
+        <span class="text-sm font-bold t-text w-12 text-right" id="progLabel">${prog}%</span>
+      </div>
+      <div class="flex gap-2 mt-2">
+        <button onclick="updateBookProgress('${book.id}', 0)" class="cat-chip" style="--cat-color:#64748b">归零</button>
+        <button onclick="updateBookProgress('${book.id}', 100)" class="cat-chip" style="--cat-color:#34d399">读完</button>
+        ${isCustom ? `<button onclick="resetBookProgress('${book.id}')" class="cat-chip" style="--cat-color:#f59e0b">重置默认</button>` : ''}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-label">复习入口</div>
+      <a href="https://example.com/" target="_blank" class="block mt-2 py-3 t-card3 hover:opacity-80 t-accent rounded-lg text-center text-sm transition-colors">
+        📖 前往 example.com 复习此书 →
+      </a>
+    </div>
+
+    ${linked.length > 0 ? `
+    <div class="detail-section">
+      <div class="detail-label">关联企业家 (${linked.length})</div>
+      <div class="space-y-2 mt-2">${linkedHtml}</div>
+    </div>
+    ` : ''}
+  `;
+  document.getElementById('entModal').classList.remove('hidden');
+}
+
+function resetBookProgress(id) {
+  delete bookProgress[id];
+  saveBookProgress();
+  showBookDetail(id);
+  if (currentView === 'books') renderBooks();
+}
+
+// ============ 卡片方向键导航 ============
+function navigateCards(dir) {
+  const panel = document.getElementById(`panel-${currentView}`);
+  if (!panel) return;
+  const cards = [...panel.querySelectorAll('.ent-card, .book-card, .event-card')];
+  if (!cards.length) return;
+  cards.forEach(c => c.setAttribute('tabindex', '0'));
+  const focused = document.activeElement;
+  let idx = cards.indexOf(focused);
+  if (idx === -1) { cards[0].focus(); cards[0].scrollIntoView({ block: 'nearest' }); return; }
+  let next;
+  if (dir === 'ArrowRight' || dir === 'ArrowDown') next = (idx + 1) % cards.length;
+  else next = (idx - 1 + cards.length) % cards.length;
+  cards[next].focus();
+  cards[next].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+// ============ 事件绑定 ============
+document.querySelectorAll('.view-tab').forEach(btn => {
+  btn.addEventListener('click', () => showPanel(btn.dataset.view));
+});
+
+// 搜索防抖（不影响分类/年代筛选）
+let searchTimer = null;
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  searchQuery = e.target.value;
+  showSearchStatus(true);
+  if (searchTimer) clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    searchTimer = null;
+    showSearchStatus(false);
+    updateFilterBadge();
+    updateHash();
+    showPanel(currentView);
+  }, 300);
+});
+
+document.getElementById('yearFrom').addEventListener('change', (e) => {
+  yearFrom = parseInt(e.target.value) || 1980;
+  updateFilterBadge(); updateHash(); showPanel(currentView);
+});
+document.getElementById('yearTo').addEventListener('change', (e) => {
+  yearTo = parseInt(e.target.value) || 2026;
+  updateFilterBadge(); updateHash(); showPanel(currentView);
+});
+
+document.getElementById('clearCatFilter').addEventListener('click', () => {
+  activeCategories.clear();
+  renderCategoryFilters();
+  updateFilterBadge(); updateHash(); showPanel(currentView);
+});
+
+document.getElementById('closeDetail').addEventListener('click', () => {
+  document.getElementById('detailPanel').classList.add('hidden');
+});
+
+// 键盘导航
+document.addEventListener('keydown', (e) => {
+  const inField = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
+  if (inField) {
+    if (e.key === 'Escape') {
+      e.target.blur();
+      if (e.target.id === 'searchInput' && e.target.value) {
+        e.target.value = '';
+        searchQuery = '';
+        showSearchStatus(false);
+        updateFilterBadge(); updateHash(); showPanel(currentView);
+      } else if (e.target.id === 'networkSearch') {
+        networkSearchQuery = '';
+        e.target.value = '';
+        highlightNetworkNodes();
+      }
+    }
+    return;
+  }
+  if (e.key === 'Escape') {
+    closeEntModal();
+    const sp = document.getElementById('settingsPanel');
+    if (!sp.classList.contains('hidden')) sp.classList.add('hidden');
+    const ep = document.getElementById('exportPanel');
+    if (ep && !ep.classList.contains('hidden')) ep.classList.add('hidden');
+  }
+  if (e.key === '/') {
+    e.preventDefault();
+    document.getElementById('searchInput').focus();
+  }
+  const viewMap = { '1': 'grid', '2': 'timeline', '3': 'network', '4': 'map', '5': 'events', '6': 'stats', '7': 'books', '8': 'compare' };
+  if (viewMap[e.key]) {
+    showPanel(viewMap[e.key]);
+  }
+  if (e.key.startsWith('Arrow')) {
+    const panel = document.getElementById(`panel-${currentView}`);
+    const cards = panel ? panel.querySelectorAll('.ent-card, .book-card, .event-card') : [];
+    if (cards.length) {
+      e.preventDefault();
+      navigateCards(e.key);
+    }
+  }
+});
+
+// Hash 路由监听（前进/后退）
+window.addEventListener('hashchange', () => {
+  if (isHashApplying) return;
+  isHashApplying = true;
+  if (parseHash()) {
+    updateFavoritesUI();
+    updateFilterBadge();
+    showPanel(currentView);
+  }
+  isHashApplying = false;
+});
+
+// 点击空白关闭设置面板和导出面板
+document.addEventListener('click', (e) => {
+  const sp = document.getElementById('settingsPanel');
+  const sb = document.getElementById('settingsBtn');
+  if (!sp.classList.contains('hidden') && !sp.contains(e.target) && e.target !== sb) {
+    sp.classList.add('hidden');
+  }
+  const ep = document.getElementById('exportPanel');
+  const eb = document.getElementById('exportBtn');
+  if (ep && !ep.classList.contains('hidden') && !ep.contains(e.target) && e.target !== eb) {
+    ep.classList.add('hidden');
+  }
+});
+
+// ============ 初始化 ============
+loadFavorites();
+loadBookProgress();
+loadTheme();
+parseHash();
+updateFavoritesUI();
+updateCompareUI();
+renderCategoryFilters();
+updateFilterBadge();
+showPanel(currentView || 'grid');
+
+// ============ PWA Service Worker 注册 ============
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
