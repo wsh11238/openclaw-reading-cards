@@ -1,46 +1,63 @@
-# OpenClaw Reading Cards | 阅读卡片知识库
+# OpenClaw 阅读卡片知识库
 
-A clean reading-card and profile-library template for turning people, books, and notes into a searchable knowledge portal.
+一个把人物、书籍、事件、行业、关系和地图组织成可搜索知识门户的静态系统，适合阅读笔记、企业家人物志和公开学习资料库。
 
-一个轻量的阅读卡片知识库模板：把人物、书摘、行业、标签和学习资料整理成可搜索、可浏览、可发布的静态站点。
+**English introduction:** [README_EN.md](README_EN.md)
 
-![Reading cards preview](docs/screenshot.png)
-
+![项目预览](docs/screenshot.png)
 
 ## 页面截图
 
-下面两张图都是从本仓库真实页面生成的中文截图，方便快速判断项目实际效果。
+下面两张图都来自本仓库真实页面渲染：第一张展示首屏效果，第二张展示继续滚动后的功能内容。
 
-| 页面截图 1 | 页面截图 2 |
+| 首屏截图 | 第二屏截图 |
 |---|---|
-| ![真实中文网页截图 1](docs/screenshot-2.png) | ![真实中文网页截图 2](docs/screenshot-3.png) |
+| ![真实中文网页首屏](docs/screenshot-2.png) | ![真实中文网页第二屏](docs/screenshot-3.png) |
 
-## Why Star This | 为什么值得 Star
+## 系统功能总览
 
-- Great starting point for a personal reading system, founder library, biography index, or learning portal.
-- Pure static files: easy to deploy, easy to fork, easy to customize.
-- Data is separated into simple JavaScript files, so non-backend projects can still feel structured.
-- 适合把零散阅读笔记变成“别人愿意打开看的知识产品”。
+这个系统不是普通书单页面，而是一个“人物 + 书籍 + 事件 + 关系 + 地图 + 统计”的知识库界面。它适合把阅读笔记、企业家资料、行业人物和学习内容整理成一个可以筛选、浏览、对比和发布的静态门户。
 
-## What Is Inside | 项目内容
+## 核心功能
 
-- `index.html`: static reading-card interface.
-- `books.js`: book/profile data source.
-- `data.js`: category and page data.
-- `manifest.json`: installable web app metadata.
+- **人物卡片总览**：按行业分类展示人物卡片，包含姓名、公司、年份、城市、简介、事件数量和关系数量。
+- **全文搜索**：支持按企业家、公司、事件等关键词快速检索。
+- **行业筛选**：按互联网/科技、制造业、消费品、房地产、金融、汽车、教育、医药等分类筛选。
+- **年代范围筛选**：通过起止年份限制人物和事件范围。
+- **收藏筛选**：可收藏人物并只查看收藏内容。
+- **人物对比**：选择 2-3 位人物进行对比，适合做学习分析和人物研究。
+- **时间轴视图**：将人物事件按年份组织，适合看行业和个人发展脉络。
+- **关系网络视图**：用关系图展示人物之间的合作、竞争、投资、师友等连接。
+- **地图视图**：按地点展示人物和事件分布，适合观察地域脉络。
+- **事件列表**：集中浏览创业、融资、上市、产品、组织变化等事件。
+- **统计视图**：用统计图观察行业、年代、事件类型等结构。
+- **书库模块**：管理书籍、作者、阅读进度、分类和相关人物。
+- **数据导出**：保留 CSV、JSON、网络图 SVG 等导出入口。
+- **键盘导航与设置面板**：支持快捷键提示、主题切换、数据操作等体验细节。
 
-## Best Use Cases | 适合做什么
+## 适合改造成什么
 
-- Reading-note websites
-- Entrepreneur biography libraries
-- Knowledge-card portals
-- Public learning archives
-- 书摘库、人物志、知识卡片、学习资料导航
+- 个人阅读笔记系统
+- 企业家人物志网站
+- 行业知识库
+- 课程资料导航
+- 公开学习档案库
 
-## Quick Start | 快速开始
+## 目录说明
 
-Open `index.html` directly in a browser, or deploy the folder to any static hosting platform.
+- `index.html`：完整静态知识库界面。
+- `data.js`：人物、事件、关系、地点和分类数据。
+- `books.js`：书籍、作者、进度和书库数据。
+- `manifest.json`：PWA 安装信息。
 
-## Public Safety | 公开安全说明
+## 快速开始
 
-Private deployment URLs, tokens, local state, and hosting identifiers were removed before publication.
+直接打开 `index.html`，或部署到任意静态托管平台。
+
+## 公开安全说明
+
+这个公开版本已经移除真实部署地址、生产密钥、Cloudflare token、本地环境文件、日志、`.wrangler`、`node_modules` 和任何不适合公开的私有信息。你可以放心把它当作学习、参考和二次开发的起点。
+
+## 推荐 Star 的理由
+
+如果你正在做类似产品，这个仓库不是只能看一眼的截图，而是能直接 Fork 的结构样板：页面、数据、组件、交互和说明文档都已经整理好，可以节省从 0 到 1 搭骨架的时间。
