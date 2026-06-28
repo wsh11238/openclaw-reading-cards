@@ -6,19 +6,33 @@ A static knowledge portal for organizing people, books, events, industries, rela
 
 ![Demo](docs/demo.gif)
 
-## At A Glance
+## Understand It In 3 Seconds
 
-**Build a searchable knowledge base from reading notes, people, books, and events.**
+**Start here if you only open one OpenClaw repo: turn reading notes, profile data, and business events into a searchable static knowledge base.**
 
-- Useful for reading-note libraries, entrepreneur profiles, learning portals, and static knowledge products.
-- Overview, timeline, relationships, map, events, statistics, and book library views are already connected.
-- Maintain simple data files and keep expanding the knowledge base.
+> Suggested first OpenClaw launch repo: it is the easiest one for readers, knowledge workers, frontend developers, and content builders to understand.
+
+
+Good fit for:
+- reading-note libraries
+- founder profile sites
+- industry people databases
+- personal knowledge bases
+- static content products
 
 ## Fork It In 30 Seconds
 
-Fork it, replace `data.js` and `books.js`, and create your own reading-card or profile library.
+Fork it, replace `data.js` and `books.js`, and publish your own reading-card or profile library.
 
-> If this saves you from rebuilding the same product skeleton later, consider starring the repo.
+Main data to replace: `data.js` / `books.js`.
+
+## Publish And Promote It
+
+- Deployment guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+- Launch copy kit: [docs/LAUNCH_KIT.md](docs/LAUNCH_KIT.md)
+- Social preview image: [docs/social-preview.png](docs/social-preview.png)
+
+> If this template saves you from rebuilding the same product skeleton later, consider starring the repo.
 
 ## Screenshots
 
