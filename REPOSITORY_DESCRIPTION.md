@@ -1,1 +1,1 @@
-阅读卡片知识库：人物卡片、书库、事件时间轴、关系网络、地图、统计、搜索筛选、收藏、对比和数据导出整合成一个可发布的静态知识门户。
+Beautiful static reading-card and biography knowledge base template with timeline, books, search, and relationship views.

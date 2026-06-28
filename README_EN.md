@@ -4,7 +4,21 @@ A static knowledge portal for organizing people, books, events, industries, rela
 
 **中文介绍:** [README.md](README.md)
 
-![Project preview](docs/screenshot.png)
+![Demo](docs/demo.gif)
+
+## At A Glance
+
+**Build a searchable knowledge base from reading notes, people, books, and events.**
+
+- Useful for reading-note libraries, entrepreneur profiles, learning portals, and static knowledge products.
+- Overview, timeline, relationships, map, events, statistics, and book library views are already connected.
+- Maintain simple data files and keep expanding the knowledge base.
+
+## Fork It In 30 Seconds
+
+Fork it, replace `data.js` and `books.js`, and create your own reading-card or profile library.
+
+> If this saves you from rebuilding the same product skeleton later, consider starring the repo.
 
 ## Screenshots
 
